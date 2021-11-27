@@ -1,0 +1,294 @@
+#!/bin/bash
+
+while getopts "ad:e:np:rsu:" flag; do
+    case "${flag}" in
+        a)
+          # Add a new credential profile to the local config.
+          if [ ! -f ~/.havoc/config ]; then
+            echo "Could not find a local config file. Run ./havoc -d or ./havoc -s."
+            exit
+          fi
+          echo "Creating a new credential profile..."
+          read -p "Credential profile name [default]: " deploy_profile && echo "[${deploy_profile}]" >> ~/.havoc/config
+          read -p "Campaign ID: " campaign_id && echo "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
+          read -p "API domain name: " api_domain_name && echo "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config
+          read -p "API region: " api_region && echo "API_REGION = ${api_region}" >> ~/.havoc/config
+          read -p "API key: " api_key && echo "API_KEY = ${api_key}" >> ~/.havoc/config
+          read -p "Secret: " secret && echo "SECRET = ${secret}" >> ~/.havoc/config
+          read -p "Campaign admin email: " adm_email && echo "CAMPAIGN_ADMIN_EMAIL = ${adm_email}" >> ~/.havoc/config
+          read -p "Output format (table|json) [table]: " output && echo "OUTPUT = ${output}" >> ~/.havoc/config
+          echo "Done."
+          exit
+          ;;
+        d)
+          # Deploy a new campaign and configure the local environment.
+          deploy=${OPTARG}
+          tf_exists=`which terraform`
+          if [ ! ${tf_exists} ]; then
+            echo "Could not find terraform. Please install terraform before continuing."
+            exit
+          fi
+          python3_exists=`which python3`
+          if [ ! ${python3_exists} ]; then
+            echo "Could not find python3. Please install python3 before continuing."
+            exit
+          fi
+          pip_exists=`which pip`
+          if [ ! ${pip_exists} ]; then
+            echo "Could not find pip. Please install pip before continuing."
+            exit
+          fi
+          if [ ${deploy} == aws ]; then
+            echo "Deploying a new ./havoc campaign..."
+            python3 -m venv venv
+            touch havoc-deploy/aws/terraform.tfvars
+            read -p "AWS region: " aws_region
+            echo 'aws_region = "${aws_region}"' >> havoc-deploy/aws/terraform.tfvars
+            read -p "AWS profile: " aws_profile
+            echo 'aws_profile = "${aws_profile}"' >> havoc-deploy/aws/terraform.tfvars
+            read -p "./havoc campaign name: " campaign_name
+            echo 'campaign_name = "${campaign_name}"' >> havoc-deploy/aws/terraform.tfvars
+            read -p "./havoc campaign administrator email: " campaign_admin_email
+            echo 'campaign_admin_email = "${campaign_admin_email}"' >> havoc-deploy/aws/terraform.tfvars
+            read -p "Enable custom domain name? (Y/N): " enable_domain
+            if [[ ${enable_domain} == y* ]] || [[ ${enable_domain} == Y* ]]; then
+              echo 'enable_domain_name = true' >> havoc-deploy/aws/terraform.tfvars
+              read -p "Custom domain name: " custom_domain_name
+              echo 'domain_name = "${custom_domain_name}"' >> havoc-deploy/aws/terraform.tfvars
+              read -p "Hosted zone ID: " hosted_zone
+              echo 'hosted_zone = "${hosted_zone}"' >> havoc-deploy/aws/terraform.tfvars
+            else
+              echo 'enable_domain_name = false' >> havoc-deploy/aws/terraform.tfvars
+            fi
+            echo "Starting terraform tasks..."
+            terraform -chdir=havoc-deploy/aws init
+            tf_out=$(terraform -chdir=havoc-deploy/aws apply -auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
+            echo "Terraform tasks completed."
+            mkdir ~/.havoc
+            touch ~/.havoc/config
+            touch ~/.havoc/playbooks
+            read -p "Credential profile name [default]: " deploy_profile && echo ${deploy_profile} >> ~/.havoc/config
+            read -p "Output format (table|json) [table]: " output && echo "OUTPUT = ${output}" >> ~/.havoc/config
+            api_domain_name=`printf ${tf_out} | sed -n '/^API_DOMAIN_NAME/p'`
+            echo ${api_domain_name} >> ~/.havoc/config && echo ${api_domain_name}
+            api_key=`printf ${tf_out} | sed -n '/^API_KEY/p'`
+            echo ${api_key} >> ~/.havoc/config && echo ${api_key}
+            secret=`printf ${tf_out} | sed -n '/^SECRET/p'`
+            echo ${secret} >> ~/.havoc/config && echo ${secret}
+            api_region=`printf${tf_out} | sed -n '/^API_REGION/p'`
+            echo ${api_region} >> ~/.havoc/config && echo ${api_region}
+            campaign_admin_email=`printf${tf_out} | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p'`
+            echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
+            campaign_id=`printf${tf_out} | sed -n '/^CAMPAIGN_ID/p'`
+            echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
+            source ./venv/bin/activate
+            pip install -r ./requirements.txt
+            for d in ./havoc-playbooks/*/ ; do
+              pip install -r "${d}/requirements.txt"
+              echo ${d} >> ~/.havoc/playbooks
+            done
+            echo "Done."
+            exit
+          fi
+          ;;
+        e)
+          # Execute a playbook and optionally pass a credential profile to use with the playbook.
+          python3_exists=`which python3`
+          if [ ! ${python3_exists} ]; then
+            echo "Could not find python3. Please install python3 before continuing."
+            exit
+          fi
+          pip_exists=`which pip`
+          if [ ! ${pip_exists} ]; then
+            echo "Could not find pip. Please install pip before continuing."
+            exit
+          fi
+          python_pkg=`pip list`
+          havoc_exists=`printf ${python_pkg} | sed -n '/^havoc/p'`
+          if [ ! ${havoc_exists} ]; then
+            echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
+            exit
+          fi
+          playbook_profile=${OPTARG}
+          IFS=' ' read -r -a array <<< ${playbook_profile}
+          playbook=${array[0]}
+          profile=${array[1]}
+          playbook_exists=`cat ~/.havoc/playbooks | sed -n '/^${playbook}'`
+          if [ ! ${playbook_exists} ]; then
+            echo "Playbook ${playbook} is not installed. Exiting."
+            exit
+          fi
+          python3 "./havoc-playbooks/${playbook}/${playbook}.py --profile ${profile}"
+          exit
+          ;;
+        n)
+          # Install a new playbook.
+          python3_exists=`which python3`
+          if [ ! ${python3_exists} ]; then
+            echo "Could not find python3. Please install python3 before continuing."
+            exit
+          fi
+          pip_exists=`which pip`
+          if [ ! ${pip_exists} ]; then
+            echo "Could not find pip. Please install pip before continuing."
+            exit
+          fi
+          python_pkg=`pip list`
+          havoc_exists=`printf ${python_pkg} | sed -n '/^havoc/p'`
+          if [ ! ${havoc_exists} ]; then
+            echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
+            exit
+          fi
+          playbook=${OPTARG}
+          playbook_exists=`cat ~/.havoc/playbooks | sed -n '/^${playbook}'`
+          if [ ${playbook_exists} ]; then
+            echo "Playbook ${playbook} is already installed."
+            exit
+          fi
+          if [ ! -f "./havoc-playbooks/${playbook}/requirements.txt" ]; then
+            echo "Could not find ${playbook} in havoc-playbooks."
+            exit
+          fi
+          pip install -r "./havoc-playbooks/${playbook}/requirements.txt"
+          echo ${playbook} >> ~/.havoc/playbooks
+          echo "Playbook ${playbook} installed."
+          exit
+          ;;
+        p)
+          # Run the interactive CLI with a specific credential profile.
+          python3_exists=`which python3`
+          if [ ! ${python3_exists} ]; then
+            echo "Could not find python3. Please install python3 before continuing."
+            exit
+          fi
+          pip_exists=`which pip`
+          if [ ! ${pip_exists} ]; then
+            echo "Could not find pip. Please install pip before continuing."
+            exit
+          fi
+          if [ ! -f ~/.havoc/config ]; then
+            echo "Could not find a local config file. Run ./havoc -d or ./havoc -s."
+            exit
+          fi
+          python_pkg=`pip list`
+          havoc_exists=`printf ${python_pkg} | sed -n '/^havoc/p'`
+          if [ ! ${havoc_exists} ]; then
+            echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
+            exit
+          fi
+          profile=${OPTARG}
+          python3 ./havoc_cli.py --profile ${profile}
+          exit
+          ;;
+        r)
+          # Destroy an existing campaign; this will not destroy the local environment or remove any local credentials.
+          tf_exists=`which terraform`
+          if [ ! ${tf_exists} ]; then
+            echo "Could not find terraform. Please install terraform before continuing."
+            exit
+          fi
+          deploy=${OPTARG}
+          if [ ${deploy} == aws ]; then
+            read -p "Are you sure you want to destroy your ./havoc deployment? (Y/N) [N]: " destroy
+            if [[ ${destroy} == y* ]] || [[ ${destroy} == Y* ]]; then
+              echo "Destroying ./havoc campaign"
+              tf_out=$(terraform -chdir=havoc-deploy/aws destroy -auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
+              echo "Done."
+            fi
+          else
+            echo "Only aws deployment types are currently supported"
+          fi
+          exit
+          ;;
+        s)
+          # Setup the local environment without deploying a new campaign.
+          python3_exists=`which python3`
+          if [ ! ${python3_exists} ]; then
+            echo "Could not find python3. Please install python3 before continuing."
+            exit
+          fi
+          pip_exists=`which pip`
+          if [ ! ${pip_exists} ]; then
+            echo "Could not find pip. Please install pip before continuing."
+            exit
+          fi
+          echo "Setting up local environment..."
+          mkdir ~/.havoc
+          touch ~/.havoc/config
+          read -p "Credential profile name [default]: " deploy_profile && echo "[${deploy_profile}]" >> ~/.havoc/config
+          read -p "Campaign ID: " campaign_id && echo "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
+          read -p "API domain name: " api_domain_name && echo "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config
+          read -p "API region: " api_region && echo "API_REGION = ${api_region}" >> ~/.havoc/config
+          read -p "API key: " api_key && echo "API_KEY = ${api_key}" >> ~/.havoc/config
+          read -p "Secret: " secret && echo "SECRET = ${secret}" >> ~/.havoc/config
+          read -p "Campaign admin email: " adm_email && echo "CAMPAIGN_ADMIN_EMAIL = ${adm_email}" >> ~/.havoc/config
+          read -p "Output format (table|json) [table]: " output && echo "OUTPUT = ${output}" >> ~/.havoc/config
+          python3 -m venv venv
+          source ./venv/bin/activate
+          pip install -r ./requirements.txt
+          for d in ./havoc-playbooks/*/ ; do
+            pip install -r "${d}/requirements.txt"
+          done
+          echo "Done."
+          exit
+          ;;
+        u)
+          # Update an existing campaign.
+          tf_exists=`which terraform`
+          if [ ! ${tf_exists} ]; then
+            echo "Could not find terraform. Please install terraform before continuing."
+            exit
+          fi
+          python3_exists=`which python3`
+          if [ ! ${python3_exists} ]; then
+            echo "Could not find python3. Please install python3 before continuing."
+            exit
+          fi
+          pip_exists=`which pip`
+          if [ ! ${pip_exists} ]; then
+            echo "Could not find pip. Please install pip before continuing."
+            exit
+          fi
+          deploy=${OPTARG}
+          if [ ${deploy} == aws ]; then
+            echo "Getting updates..."
+            git pull --recurse-submodules
+            tf_out=$(terraform -chdir=havoc-deploy/aws apply -auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
+            source ./venv/bin/activate
+            pip install -r ./requirements.txt
+            pip install --upgrade havoc
+            for d in ./havoc-playbooks/*/ ; do
+              pip install -r "${d}/requirements.txt"
+              echo ${d} >> ~/.havoc/playbooks
+            done
+            echo "Update complete"
+          else
+            echo "Only aws deployment types are currently supported"
+          fi
+          exit
+          ;;
+    esac
+done
+
+if [ $# -eq 0 ]; then
+  python3_exists=`which python3`
+  if [ ! ${python3_exists} ]; then
+    echo "Could not find python3. Please install python3 before continuing."
+    exit
+  fi
+  pip_exists=`which pip`
+  if [ ! ${pip_exists} ]; then
+    echo "Could not find pip. Please install pip before continuing."
+    exit
+  fi
+  python_pkg=`pip list`
+  havoc_exists=`printf ${python_pkg} | sed -n '/^havoc/p'`
+  if [ ! ${havoc_exists} ]; then
+    echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
+    exit
+  fi
+  python3 ./havoc_cli.py
+fi
+exit
+
+
