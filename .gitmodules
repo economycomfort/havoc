@@ -1,6 +1,0 @@
-[submodule "havoc-deploy"]
-	path = havoc-deploy
-	url = git@github.com:havocsh/havoc-deploy.git
-[submodule "havoc-playbooks"]
-	path = havoc-playbooks
-	url = git@github.com:havocsh/havoc-playbooks.git
