@@ -1,0 +1,6 @@
+[submodule "havoc-deploy"]
+	path = havoc-deploy
+	url = ../havoc-deploy
+[submodule "havoc-playbooks"]
+	path = havoc-playbooks
+	url = ../havoc-playbooks
