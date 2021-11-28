@@ -54,22 +54,22 @@ while getopts "ad:e:np:rsu:" flag; do
             python3 -m venv venv
             touch havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS region: " aws_region
-            echo aws_region = "${aws_region}" >> havoc-deploy/aws/terraform/terraform.tfvars
+            echo aws_region = \"${aws_region}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS profile: " aws_profile
-            echo aws_profile = "${aws_profile}" >> havoc-deploy/aws/terraform/terraform.tfvars
+            echo aws_profile = \"${aws_profile}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "./havoc campaign name: " campaign_name
-            echo campaign_name = "${campaign_name}" >> havoc-deploy/aws/terraform/terraform.tfvars
+            echo campaign_name = \"${campaign_name}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "./havoc campaign administrator email: " campaign_admin_email
-            echo campaign_admin_email = "${campaign_admin_email}" >> havoc-deploy/aws/terraform/terraform.tfvars
+            echo campaign_admin_email = \"${campaign_admin_email}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "Task results queue expiration: " results_queue_expiration
             echo results_queue_expiration = ${results_queue_expiration}
             read -p "Enable custom domain name? (Y/N): " enable_domain
             if [[ ${enable_domain} == y* ]] || [[ ${enable_domain} == Y* ]]; then
               echo enable_domain_name = true >> havoc-deploy/aws/terraform/terraform.tfvars
               read -p "Custom domain name: " custom_domain_name
-              echo domain_name = "${custom_domain_name}" >> havoc-deploy/aws/terraform/terraform.tfvars
+              echo domain_name = \"${custom_domain_name}\" >> havoc-deploy/aws/terraform/terraform.tfvars
               read -p "Hosted zone ID: " hosted_zone
-              echo hosted_zone = "${hosted_zone}" >> havoc-deploy/aws/terraform/terraform.tfvars
+              echo hosted_zone = \"${hosted_zone}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             else
               echo enable_domain_name = false >> havoc-deploy/aws/terraform/terraform.tfvars
             fi
