@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
 import re
-import ast
 import json
 import argparse
 from configparser import ConfigParser
 import tabulate
-import time as t
 from cmd2 import Cmd
 import havoc
 
