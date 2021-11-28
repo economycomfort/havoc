@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getopts "ad:e:np:rsu:" flag; do
+while getopts "ad:e:np:r:su:" flag; do
     case "${flag}" in
         a)
           # Add a new credential profile to the local config.
@@ -74,8 +74,8 @@ while getopts "ad:e:np:rsu:" flag; do
               echo enable_domain_name = false >> havoc-deploy/aws/terraform/terraform.tfvars
             fi
             echo "Starting terraform tasks..."
-            tf_init_out=$(terraform -chdir=havoc-deploy/aws/terraform init 2>&1) || echo ${tf_init_out} 1>&2
-            tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply --auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
+            terraform -chdir=havoc-deploy/aws/terraform init
+            tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply --auto-approve)
             echo "Terraform tasks completed."
             mkdir ~/.havoc
             touch ~/.havoc/config
@@ -93,9 +93,9 @@ while getopts "ad:e:np:rsu:" flag; do
             api_domain_name=$(printf ${tf_out} | sed -n '/^API_DOMAIN_NAME/p') && echo ${api_domain_name} >> ~/.havoc/config && echo ${api_domain_name}
             api_key=$(printf ${tf_out} | sed -n '/^API_KEY/p') && echo ${api_key} >> ~/.havoc/config && echo ${api_key}
             secret=$(printf ${tf_out} | sed -n '/^SECRET/p') && echo ${secret} >> ~/.havoc/config && echo ${secret}
-            api_region=$(printf${tf_out} | sed -n '/^API_REGION/p') && echo ${api_region} >> ~/.havoc/config && echo ${api_region}
-            campaign_admin_email=$(printf${tf_out} | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p') && echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
-            campaign_id=$(printf${tf_out} | sed -n '/^CAMPAIGN_ID/p') && echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
+            api_region=$(printf ${tf_out} | sed -n '/^API_REGION/p') && echo ${api_region} >> ~/.havoc/config && echo ${api_region}
+            campaign_admin_email=$(printf ${tf_out} | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p') && echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
+            campaign_id=$(printf ${tf_out} | sed -n '/^CAMPAIGN_ID/p') && echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
             source ./venv/bin/activate
             ${pip_bin} install -r ./requirements.txt
             for d in ./havoc-playbooks/*/ ; do
