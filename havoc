@@ -9,14 +9,22 @@ while getopts "ad:e:np:rsu:" flag; do
             exit
           fi
           echo "Creating a new credential profile..."
-          read -p "Credential profile name [default]: " deploy_profile && echo "[${deploy_profile}]" >> ~/.havoc/config
+          read -p "Credential profile name [default]: " deploy_profile
+          if [ ! ${deploy_profile} ]; then
+              deploy_profile=default
+          fi
+          echo [${deploy_profile}] >> ~/.havoc/config
           read -p "Campaign ID: " campaign_id && echo "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
           read -p "API domain name: " api_domain_name && echo "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config
           read -p "API region: " api_region && echo "API_REGION = ${api_region}" >> ~/.havoc/config
           read -p "API key: " api_key && echo "API_KEY = ${api_key}" >> ~/.havoc/config
           read -p "Secret: " secret && echo "SECRET = ${secret}" >> ~/.havoc/config
           read -p "Campaign admin email: " adm_email && echo "CAMPAIGN_ADMIN_EMAIL = ${adm_email}" >> ~/.havoc/config
-          read -p "Output format (table|json) [table]: " output && echo "OUTPUT = ${output}" >> ~/.havoc/config
+          read -p "Output format (table|json) [table]: " output
+          if [ ! ${output} ]; then
+              output=table
+            fi
+          echo "OUTPUT = ${output}" >> ~/.havoc/config
           echo "Done."
           exit
           ;;
@@ -46,46 +54,48 @@ while getopts "ad:e:np:rsu:" flag; do
             python3 -m venv venv
             touch havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS region: " aws_region
-            echo aws_region = ${aws_region} >> havoc-deploy/aws/terraform/terraform.tfvars
+            echo aws_region = "${aws_region}" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS profile: " aws_profile
-            echo aws_profile = ${aws_profile} >> havoc-deploy/aws/terraform/terraform.tfvars
+            echo aws_profile = "${aws_profile}" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "./havoc campaign name: " campaign_name
-            echo campaign_name = ${campaign_name} >> havoc-deploy/aws/terraform/terraform.tfvars
+            echo campaign_name = "${campaign_name}" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "./havoc campaign administrator email: " campaign_admin_email
-            echo campaign_admin_email = ${campaign_admin_email} >> havoc-deploy/aws/terraform/terraform.tfvars
+            echo campaign_admin_email = "${campaign_admin_email}" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "Task results queue expiration: " results_queue_expiration
             echo results_queue_expiration = ${results_queue_expiration}
             read -p "Enable custom domain name? (Y/N): " enable_domain
             if [[ ${enable_domain} == y* ]] || [[ ${enable_domain} == Y* ]]; then
               echo enable_domain_name = true >> havoc-deploy/aws/terraform/terraform.tfvars
               read -p "Custom domain name: " custom_domain_name
-              echo domain_name = ${custom_domain_name} >> havoc-deploy/aws/terraform/terraform.tfvars
+              echo domain_name = "${custom_domain_name}" >> havoc-deploy/aws/terraform/terraform.tfvars
               read -p "Hosted zone ID: " hosted_zone
-              echo hosted_zone = ${hosted_zone} >> havoc-deploy/aws/terraform/terraform.tfvars
+              echo hosted_zone = "${hosted_zone}" >> havoc-deploy/aws/terraform/terraform.tfvars
             else
               echo enable_domain_name = false >> havoc-deploy/aws/terraform/terraform.tfvars
             fi
             echo "Starting terraform tasks..."
-            tf_init_out = $(terraform -chdir=havoc-deploy/aws/terraform init 2>&1) || echo ${tf_init_out} 1>&2
+            tf_init_out=$(terraform -chdir=havoc-deploy/aws/terraform init 2>&1) || echo ${tf_init_out} 1>&2
             tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply --auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
             echo "Terraform tasks completed."
             mkdir ~/.havoc
             touch ~/.havoc/config
             touch ~/.havoc/playbooks
-            read -p "Credential profile name [default]: " deploy_profile && echo ${deploy_profile} >> ~/.havoc/config
-            read -p "Output format (table|json) [table]: " output && echo OUTPUT = ${output} >> ~/.havoc/config
-            api_domain_name=$(printf ${tf_out} | sed -n '/^API_DOMAIN_NAME/p')
-            echo ${api_domain_name} >> ~/.havoc/config && echo ${api_domain_name}
-            api_key=$(printf ${tf_out} | sed -n '/^API_KEY/p')
-            echo ${api_key} >> ~/.havoc/config && echo ${api_key}
-            secret=$(printf ${tf_out} | sed -n '/^SECRET/p')
-            echo ${secret} >> ~/.havoc/config && echo ${secret}
-            api_region=$(printf${tf_out} | sed -n '/^API_REGION/p')
-            echo ${api_region} >> ~/.havoc/config && echo ${api_region}
-            campaign_admin_email=$(printf${tf_out} | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p')
-            echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
-            campaign_id=$(printf${tf_out} | sed -n '/^CAMPAIGN_ID/p')
-            echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
+            read -p "./havoc credential profile name [default]: " deploy_profile
+            if [ ! ${deploy_profile} ]; then
+              deploy_profile=default
+            fi
+            echo [${deploy_profile}] >> ~/.havoc/config
+            read -p "Output format (table|json) [table]: " output
+            if [ ! ${output} ]; then
+              output=table
+            fi
+            echo OUTPUT = ${output} >> ~/.havoc/config
+            api_domain_name=$(printf ${tf_out} | sed -n '/^API_DOMAIN_NAME/p') && echo ${api_domain_name} >> ~/.havoc/config && echo ${api_domain_name}
+            api_key=$(printf ${tf_out} | sed -n '/^API_KEY/p') && echo ${api_key} >> ~/.havoc/config && echo ${api_key}
+            secret=$(printf ${tf_out} | sed -n '/^SECRET/p') && echo ${secret} >> ~/.havoc/config && echo ${secret}
+            api_region=$(printf${tf_out} | sed -n '/^API_REGION/p') && echo ${api_region} >> ~/.havoc/config && echo ${api_region}
+            campaign_admin_email=$(printf${tf_out} | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p') && echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
+            campaign_id=$(printf${tf_out} | sed -n '/^CAMPAIGN_ID/p') && echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
             source ./venv/bin/activate
             ${pip_bin} install -r ./requirements.txt
             for d in ./havoc-playbooks/*/ ; do
