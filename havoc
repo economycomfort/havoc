@@ -260,7 +260,7 @@ while getopts "ad:e:np:r:su:" flag; do
           if [ ${deploy} == aws ]; then
             echo "Getting updates..."
             git pull --recurse-submodules
-            tf_out=$(terraform -chdir=havoc-deploy/aws apply -auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
+            tf_out=$(terraform -chdir=havoc-deploy/aws apply --auto-approve 2>&1) || echo ${tf_out} 1>&2
             ${pip_bin} install -r ./requirements.txt
             ${pip_bin} install --upgrade havoc
             for d in ./havoc-playbooks/*/ ; do
