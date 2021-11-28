@@ -41,17 +41,11 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Could not find python3. Please install python3 before continuing."
             exit
           fi
-          pip_bin=$(which pip)
-          if [ ! ${pip_bin} ]; then
-            pip_bin=$(which pip3)
-          fi
-          if [ ! ${pip_bin} ]; then
-            echo "Could not find pip in your path. Please install pip and/or add it to your path before continuing."
-            exit
-          fi
           if [ ${deploy} == aws ]; then
             echo "Deploying a new ./havoc campaign..."
             python3 -m venv venv
+            python3_bin=./venv/bin/python3
+            pip_bin=./venv/bin/pip3
             touch havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS region: " aws_region
             echo aws_region = \"${aws_region}\" >> havoc-deploy/aws/terraform/terraform.tfvars
@@ -77,7 +71,7 @@ while getopts "ad:e:np:r:su:" flag; do
             terraform -chdir=havoc-deploy/aws/terraform init
             tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply --auto-approve 2>&1) || echo ${tf_out} 1>&2
             echo "Terraform tasks completed."
-            if [ ! -f ~/.havoc ]; then
+            if [ ! -d ~/.havoc ]; then
               mkdir ~/.havoc
             fi
             if [ ! -f ~/.havoc/config ]; then
@@ -102,7 +96,6 @@ while getopts "ad:e:np:r:su:" flag; do
             api_region=$(printf "${tf_out}" | sed -n '/^API_REGION/p') && echo ${api_region} >> ~/.havoc/config && echo ${api_region}
             campaign_admin_email=$(printf "${tf_out}" | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p') && echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
             campaign_id=$(printf "${tf_out}" | sed -n '/^CAMPAIGN_ID/p') && echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
-            source ./venv/bin/activate
             ${pip_bin} install -r ./requirements.txt
             for d in ./havoc-playbooks/*/ ; do
               ${pip_bin} install -r "${d}/requirements.txt"
@@ -114,23 +107,15 @@ while getopts "ad:e:np:r:su:" flag; do
           ;;
         e)
           # Execute a playbook and optionally pass a credential profile to use with the playbook.
-          python3_bin=$(which python3)
-          if [ ! ${python3_bin} ]; then
-            echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
-            exit
+          if [ ! -d ./venv ]; then
+            echo "No virtualenv found. Run ./havoc -d or ./havoc -s before running this command."
           fi
-          pip_bin=$(which pip)
-          if [ ! ${pip_bin} ]; then
-            pip_bin=$(which pip3)
-          fi
-          if [ ! ${pip_bin} ]; then
-            echo "Could not find pip in your path. Please install pip and/or add it to your path before continuing."
-            exit
-          fi
+          python3_bin=./venv/bin/python3
+          pip_bin=./venv/bin/pip3
           python_pkg=$(${pip_bin} list)
-          havoc_exists=$(printf ${python_pkg} | sed -n '/^havoc/p')
+          havoc_exists=$(printf "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! ${havoc_exists} ]; then
-            echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
+            echo "havoc python module not found. Run ./havoc -d or ./havoc -s before running this command."
             exit
           fi
           playbook_profile=${OPTARG}
@@ -147,21 +132,13 @@ while getopts "ad:e:np:r:su:" flag; do
           ;;
         n)
           # Install a new playbook.
-          python3_bin=$(which python3)
-          if [ ! ${python3_bin} ]; then
-            echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
-            exit
+          if [ ! -d ./venv ]; then
+            echo "No virtualenv found. Run ./havoc -d or ./havoc -s before running this command."
           fi
-          pip_bin=$(which pip)
-          if [! ${pip_bin} ]; then
-            pip_bin=$(which pip3)
-          fi
-          if [ ! ${pip_bin} ]; then
-            echo "Could not find pip in your path. Please install pip and/or add it to your path before continuing."
-            exit
-          fi
+          python3_bin=./venv/bin/python3
+          pip_bin=./venv/bin/pip3
           python_pkg=$(${pip_bin} list)
-          havoc_exists=$(printf ${python_pkg} | sed -n '/^havoc/p')
+          havoc_exists=$(printf "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! ${havoc_exists} ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
             exit
@@ -183,24 +160,19 @@ while getopts "ad:e:np:r:su:" flag; do
           ;;
         p)
           # Run the interactive CLI with a specific credential profile.
-          python3_bin=$(which python3)
-          if [ ! ${python3_bin} ]; then
-            echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
-            exit
+          if [ ! -d ./venv ]; then
+            echo "No virtualenv found. Run ./havoc -d or ./havoc -s before running this command."
           fi
-          pip_bin=$(which pip)
-          if [ ! ${pip_bin} ]; then
-            echo "Could not find pip in your path. Please install pip and/or add it to your path before continuing."
-            exit
-          fi
+          python3_bin=./venv/bin/python3
+          pip_bin=./venv/bin/pip3
           if [ ! -f ~/.havoc/config ]; then
-            echo "Could not find a local config file. Run ./havoc -d or ./havoc -s."
+            echo "Could not find a local config file. Run ./havoc -d or ./havoc -s before running this command."
             exit
           fi
           python_pkg=$(${pip_bin} list)
-          havoc_exists=$(printf ${python_pkg} | sed -n '/^havoc/p')
+          havoc_exists=$(printf "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! ${havoc_exists} ]; then
-            echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
+            echo "havoc python module not found. Run ./havoc -d or ./havoc -s before running this command."
             exit
           fi
           profile=${OPTARG}
@@ -234,31 +206,37 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
             exit
           fi
-          pip_bin=$(which pip)
-          if [! ${pip_bin} ]; then
-            pip_bin=$(which pip3)
-          fi
-          if [ ! ${pip_bin} ]; then
-            echo "Could not find pip in your path. Please install pip and/or add it to your path before continuing."
-            exit
-          fi
           echo "Setting up local environment..."
-          mkdir ~/.havoc
-          touch ~/.havoc/config
-          read -p "Credential profile name [default]: " deploy_profile && echo "[${deploy_profile}]" >> ~/.havoc/config
+          python3 -m venv venv
+          python3_bin=./venv/bin/python3
+          pip_bin=./venv/bin/pip3
+          ${pip_bin} install -r ./requirements.txt
+          for d in ./havoc-playbooks/*/ ; do
+            ${pip_bin} install -r "${d}/requirements.txt"
+          done
+          echo "Adding ./havoc config..."
+          if [ ! -d ~/.havoc ]; then
+            mkdir ~/.havoc
+          fi
+          if [ ! -f ~/.havoc/config ]; then
+            touch ~/.havoc/config
+          fi
+          read -p "Credential profile name [default]: " deploy_profile
+          if [ ! ${deploy_profile} ]; then
+              deploy_profile=default
+          fi
+          echo [${deploy_profile}] >> ~/.havoc/config
           read -p "Campaign ID: " campaign_id && echo CAMPAIGN_ID = ${campaign_id} >> ~/.havoc/config
           read -p "API domain name: " api_domain_name && echo API_DOMAIN_NAME = ${api_domain_name} >> ~/.havoc/config
           read -p "API region: " api_region && echo API_REGION = ${api_region} >> ~/.havoc/config
           read -p "API key: " api_key && echo API_KEY = ${api_key} >> ~/.havoc/config
           read -p "Secret: " secret && echo SECRET = ${secret} >> ~/.havoc/config
           read -p "Campaign admin email: " adm_email && echo CAMPAIGN_ADMIN_EMAIL = ${adm_email} >> ~/.havoc/config
-          read -p "Output format (table|json) [table]: " output && echo OUTPUT = ${output} >> ~/.havoc/config
-          python3 -m venv venv
-          source ./venv/bin/activate
-          ${pip_bin} install -r ./requirements.txt
-          for d in ./havoc-playbooks/*/ ; do
-            ${pip_bin} install -r "${d}/requirements.txt"
-          done
+          read -p "Output format (table|json) [table]: " output
+          if [ ! ${output} ]; then
+              output=table
+            fi
+          echo "OUTPUT = ${output}" >> ~/.havoc/config
           echo "Done."
           exit
           ;;
@@ -269,25 +247,16 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Could not find terraform in your path. Please install terraform and/or add it to your path before continuing."
             exit
           fi
-          python3_bin=$(which python3)
-          if [ ! ${python3_bin} ]; then
-            echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
-            exit
+          if [ ! -d ./venv ]; then
+            echo "No virtualenv found. Run ./havoc -d or ./havoc -s before running this command."
           fi
-          pip_bin=$(which pip)
-          if [! ${pip_bin} ]; then
-            pip_bin=$(which pip3)
-          fi
-          if [ ! ${pip_bin} ]; then
-            echo "Could not find pip in your path. Please install pip and/or add it to your path before continuing."
-            exit
-          fi
+          python3_bin=./venv/bin/python3
+          pip_bin=./venv/bin/pip3
           deploy=${OPTARG}
           if [ ${deploy} == aws ]; then
             echo "Getting updates..."
             git pull --recurse-submodules
             tf_out=$(terraform -chdir=havoc-deploy/aws apply -auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
-            source ./venv/bin/activate
             ${pip_bin} install -r ./requirements.txt
             ${pip_bin} install --upgrade havoc
             for d in ./havoc-playbooks/*/ ; do
@@ -304,26 +273,18 @@ while getopts "ad:e:np:r:su:" flag; do
 done
 
 if [ $# -eq 0 ]; then
-  python3_bin=$(which python3)
-  if [ ! ${python3_bin} ]; then
-    echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
-    exit
+  if [ ! -d ./venv ]; then
+    echo "No virtualenv found. Run ./havoc -d or ./havoc -s first."
   fi
-  pip_bin=$(which pip)
-  if [! ${pip_bin} ]; then
-    pip_bin=$(which pip3)
-  fi
-  if [ ! ${pip_bin} ]; then
-    echo "Could not find pip in your path. Please install pip and/or add it to your path before continuing."
-    exit
-  fi
+  python3_bin=./venv/bin/python3
+  pip_bin=./venv/bin/pip3
   python_pkg=$(${pip_bin} list)
-  havoc_exists=$(printf ${python_pkg} | sed -n '/^havoc/p')
+  havoc_exists=$(printf "${python_pkg}" | sed -n '/^havoc/p')
   if [ ! ${havoc_exists} ]; then
-    echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
+    echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
     exit
   fi
-  python3 ./havoc_cli.py
+  python3_bin ./havoc_cli.py
 fi
 exit
 
