@@ -44,28 +44,28 @@ while getopts "ad:e:np:rsu:" flag; do
           if [ ${deploy} == aws ]; then
             echo "Deploying a new ./havoc campaign..."
             python3 -m venv venv
-            touch havoc-deploy/aws/terraform.tfvars
+            touch havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS region: " aws_region
-            echo 'aws_region = "${aws_region}"' >> havoc-deploy/aws/terraform.tfvars
+            echo 'aws_region = "${aws_region}"' >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS profile: " aws_profile
-            echo 'aws_profile = "${aws_profile}"' >> havoc-deploy/aws/terraform.tfvars
+            echo 'aws_profile = "${aws_profile}"' >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "./havoc campaign name: " campaign_name
-            echo 'campaign_name = "${campaign_name}"' >> havoc-deploy/aws/terraform.tfvars
+            echo 'campaign_name = "${campaign_name}"' >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "./havoc campaign administrator email: " campaign_admin_email
-            echo 'campaign_admin_email = "${campaign_admin_email}"' >> havoc-deploy/aws/terraform.tfvars
+            echo 'campaign_admin_email = "${campaign_admin_email}"' >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "Enable custom domain name? (Y/N): " enable_domain
             if [[ ${enable_domain} == y* ]] || [[ ${enable_domain} == Y* ]]; then
-              echo 'enable_domain_name = true' >> havoc-deploy/aws/terraform.tfvars
+              echo 'enable_domain_name = true' >> havoc-deploy/aws/terraform/terraform.tfvars
               read -p "Custom domain name: " custom_domain_name
-              echo 'domain_name = "${custom_domain_name}"' >> havoc-deploy/aws/terraform.tfvars
+              echo 'domain_name = "${custom_domain_name}"' >> havoc-deploy/aws/terraform/terraform.tfvars
               read -p "Hosted zone ID: " hosted_zone
-              echo 'hosted_zone = "${hosted_zone}"' >> havoc-deploy/aws/terraform.tfvars
+              echo 'hosted_zone = "${hosted_zone}"' >> havoc-deploy/aws/terraform/terraform.tfvars
             else
-              echo 'enable_domain_name = false' >> havoc-deploy/aws/terraform.tfvars
+              echo 'enable_domain_name = false' >> havoc-deploy/aws/terraform/terraform.tfvars
             fi
             echo "Starting terraform tasks..."
-            terraform -chdir=havoc-deploy/aws/terraform init
-            tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply -auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
+            tf_init_out = $(terraform -chdir=havoc-deploy/aws/terraform init 2>&1) || echo ${tf_init_out} 1>&2
+            tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply --auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
             echo "Terraform tasks completed."
             mkdir ~/.havoc
             touch ~/.havoc/config
