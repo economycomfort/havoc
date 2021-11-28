@@ -64,8 +64,8 @@ while getopts "ad:e:np:rsu:" flag; do
               echo 'enable_domain_name = false' >> havoc-deploy/aws/terraform.tfvars
             fi
             echo "Starting terraform tasks..."
-            terraform -chdir=havoc-deploy/aws init
-            tf_out=$(terraform -chdir=havoc-deploy/aws apply -auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
+            terraform -chdir=havoc-deploy/aws/terraform init
+            tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply -auto-approve -compact-warnings 2>&1) || echo ${tf_out} 1>&2
             echo "Terraform tasks completed."
             mkdir ~/.havoc
             touch ~/.havoc/config
