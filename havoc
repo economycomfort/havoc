@@ -115,7 +115,7 @@ while getopts "ad:e:np:r:su:" flag; do
           pip_bin=./venv/bin/pip3
           python_pkg=$(${pip_bin} list)
           havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
-          if [ ! ${havoc_exists} ]; then
+          if [ ! "${havoc_exists}" ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
             exit
           fi
@@ -141,7 +141,7 @@ while getopts "ad:e:np:r:su:" flag; do
           pip_bin=./venv/bin/pip3
           python_pkg=$(${pip_bin} list)
           havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
-          if [ ! ${havoc_exists} ]; then
+          if [ ! "${havoc_exists}" ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
             exit
           fi
@@ -174,7 +174,7 @@ while getopts "ad:e:np:r:su:" flag; do
           fi
           python_pkg=$(${pip_bin} list)
           havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
-          if [ ! ${havoc_exists} ]; then
+          if [ ! "${havoc_exists}" ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
             exit
           fi
@@ -285,11 +285,11 @@ if [ $# -eq 0 ]; then
   pip_bin=./venv/bin/pip3
   python_pkg=$(${pip_bin} list)
   havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
-  if [ ! ${havoc_exists} ]; then
+  if [ ! "${havoc_exists}" ]; then
     echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
     exit
   fi
-  python3_bin ./havoc_cli.py
+  ${python3_bin} ./havoc_cli.py
 fi
 exit
 
