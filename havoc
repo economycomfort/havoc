@@ -90,12 +90,12 @@ while getopts "ad:e:np:r:su:" flag; do
               output=table
             fi
             echo OUTPUT = ${output} >> ~/.havoc/config
-            api_domain_name=$(printf "${tf_out}" | sed -n '/^API_DOMAIN_NAME/p') && echo ${api_domain_name} >> ~/.havoc/config && echo ${api_domain_name}
-            api_key=$(printf "${tf_out}" | sed -n '/^API_KEY/p') && echo ${api_key} >> ~/.havoc/config && echo ${api_key}
-            secret=$(printf "${tf_out}" | sed -n '/^SECRET/p') && echo ${secret} >> ~/.havoc/config && echo ${secret}
-            api_region=$(printf "${tf_out}" | sed -n '/^API_REGION/p') && echo ${api_region} >> ~/.havoc/config && echo ${api_region}
-            campaign_admin_email=$(printf "${tf_out}" | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p') && echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
-            campaign_id=$(printf "${tf_out}" | sed -n '/^CAMPAIGN_ID/p') && echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
+            api_domain_name=$(printf '%s\n' "${tf_out}" | sed -n '/^API_DOMAIN_NAME/p') && echo ${api_domain_name} >> ~/.havoc/config && echo ${api_domain_name}
+            api_key=$(printf '%s\n' "${tf_out}" | sed -n '/^API_KEY/p') && echo ${api_key} >> ~/.havoc/config && echo ${api_key}
+            secret=$(printf '%s\n' "${tf_out}" | sed -n '/^SECRET/p') && echo ${secret} >> ~/.havoc/config && echo ${secret}
+            api_region=$(printf '%s\n' "${tf_out}" | sed -n '/^API_REGION/p') && echo ${api_region} >> ~/.havoc/config && echo ${api_region}
+            campaign_admin_email=$(printf '%s\n' "${tf_out}" | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p') && echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
+            campaign_id=$(printf '%s\n' "${tf_out}" | sed -n '/^CAMPAIGN_ID/p') && echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
             ${pip_bin} install -r ./requirements.txt
             for d in ./havoc-playbooks/*/ ; do
               ${pip_bin} install -r "${d}/requirements.txt"
@@ -114,7 +114,7 @@ while getopts "ad:e:np:r:su:" flag; do
           python3_bin=./venv/bin/python3
           pip_bin=./venv/bin/pip3
           python_pkg=$(${pip_bin} list)
-          havoc_exists=$(printf "${python_pkg}" | sed -n '/^havoc/p')
+          havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! ${havoc_exists} ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
             exit
@@ -140,7 +140,7 @@ while getopts "ad:e:np:r:su:" flag; do
           python3_bin=./venv/bin/python3
           pip_bin=./venv/bin/pip3
           python_pkg=$(${pip_bin} list)
-          havoc_exists=$(printf "${python_pkg}" | sed -n '/^havoc/p')
+          havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! ${havoc_exists} ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
             exit
@@ -173,7 +173,7 @@ while getopts "ad:e:np:r:su:" flag; do
             exit
           fi
           python_pkg=$(${pip_bin} list)
-          havoc_exists=$(printf "${python_pkg}" | sed -n '/^havoc/p')
+          havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! ${havoc_exists} ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
             exit
@@ -284,7 +284,7 @@ if [ $# -eq 0 ]; then
   python3_bin=./venv/bin/python3
   pip_bin=./venv/bin/pip3
   python_pkg=$(${pip_bin} list)
-  havoc_exists=$(printf "${python_pkg}" | sed -n '/^havoc/p')
+  havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
   if [ ! ${havoc_exists} ]; then
     echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
     exit
