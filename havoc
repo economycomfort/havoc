@@ -10,7 +10,7 @@ while getopts "ad:e:np:r:su:" flag; do
           fi
           echo "Creating a new credential profile..."
           read -p "Credential profile name [default]: " deploy_profile
-          if [ ! ${deploy_profile} ]; then
+          if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
           fi
           echo [${deploy_profile}] >> ~/.havoc/config
@@ -21,7 +21,7 @@ while getopts "ad:e:np:r:su:" flag; do
           read -p "Secret: " secret && echo "SECRET = ${secret}" >> ~/.havoc/config
           read -p "Campaign admin email: " adm_email && echo "CAMPAIGN_ADMIN_EMAIL = ${adm_email}" >> ~/.havoc/config
           read -p "Output format (table|json) [table]: " output
-          if [ ! ${output} ]; then
+          if [ ! "${output}" ]; then
               output=table
             fi
           echo "OUTPUT = ${output}" >> ~/.havoc/config
@@ -32,12 +32,12 @@ while getopts "ad:e:np:r:su:" flag; do
           # Deploy a new campaign and configure the local environment.
           deploy=${OPTARG}
           tf_bin=$(which terraform)
-          if [ ! ${tf_bin} ]; then
+          if [ ! "${tf_bin}" ]; then
             echo "Could not find terraform in your path. Please install terraform and/or add it to your path before continuing."
             exit
           fi
           python3_bin=$(which python3)
-          if [ ! ${python3_bin} ]; then
+          if [ ! "${python3_bin}" ]; then
             echo "Could not find python3. Please install python3 before continuing."
             exit
           fi
@@ -81,12 +81,12 @@ while getopts "ad:e:np:r:su:" flag; do
               touch ~/.havoc/playbooks
             fi
             read -p "./havoc credential profile name [default]: " deploy_profile
-            if [ ! ${deploy_profile} ]; then
+            if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
             fi
             printf "\n[${deploy_profile}]\n" >> ~/.havoc/config
             read -p "Output format (table|json) [table]: " output
-            if [ ! ${output} ]; then
+            if [ ! "${output}" ]; then
               output=table
             fi
             echo OUTPUT = ${output} >> ~/.havoc/config
@@ -124,7 +124,7 @@ while getopts "ad:e:np:r:su:" flag; do
           playbook=${array[0]}
           profile=${array[1]}
           playbook_exists=$(cat ~/.havoc/playbooks | sed -n '/^${playbook}')
-          if [ ! ${playbook_exists} ]; then
+          if [ ! "${playbook_exists}" ]; then
             echo "Playbook ${playbook} is not installed. Exiting."
             exit
           fi
@@ -185,7 +185,7 @@ while getopts "ad:e:np:r:su:" flag; do
         r)
           # Destroy an existing campaign; this will not destroy the local environment or remove any local credentials.
           tf_bin=$(which terraform)
-          if [ ! ${tf_bin} ]; then
+          if [ ! "${tf_bin}" ]; then
             echo "Could not find terraform in your path. Please install terraform and/or add it to your path before continuing."
             exit
           fi
@@ -205,7 +205,7 @@ while getopts "ad:e:np:r:su:" flag; do
         s)
           # Setup the local environment without deploying a new campaign.
           python3_bin=$(which python3)
-          if [ ! ${python3_bin} ]; then
+          if [ ! "${python3_bin}" ]; then
             echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
             exit
           fi
@@ -225,7 +225,7 @@ while getopts "ad:e:np:r:su:" flag; do
             touch ~/.havoc/config
           fi
           read -p "Credential profile name [default]: " deploy_profile
-          if [ ! ${deploy_profile} ]; then
+          if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
           fi
           echo [${deploy_profile}] >> ~/.havoc/config
@@ -236,7 +236,7 @@ while getopts "ad:e:np:r:su:" flag; do
           read -p "Secret: " secret && echo SECRET = ${secret} >> ~/.havoc/config
           read -p "Campaign admin email: " adm_email && echo CAMPAIGN_ADMIN_EMAIL = ${adm_email} >> ~/.havoc/config
           read -p "Output format (table|json) [table]: " output
-          if [ ! ${output} ]; then
+          if [ ! "${output}" ]; then
               output=table
             fi
           echo "OUTPUT = ${output}" >> ~/.havoc/config
@@ -246,7 +246,7 @@ while getopts "ad:e:np:r:su:" flag; do
         u)
           # Update an existing campaign.
           tf_bin=$(which terraform)
-          if [ ! ${tf_bin} ]; then
+          if [ ! "${tf_bin}" ]; then
             echo "Could not find terraform in your path. Please install terraform and/or add it to your path before continuing."
             exit
           fi
