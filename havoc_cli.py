@@ -5,7 +5,7 @@ import re
 import json
 import argparse
 from configparser import ConfigParser
-import tabulate
+from tabulate import tabulate
 from cmd2 import Cmd
 import havoc
 
@@ -53,8 +53,8 @@ def print_table(command, data):
     for d in data:
         if not isinstance(data[d], dict):
             print(tabulate(data[d], headers="keys", tablefmt='pretty'), '\n')
+    table = []
     for d in data:
-        table = []
         if isinstance(data[d], dict):
             table.append(data[d])
             print(tabulate(table, headers="keys", tablefmt='pretty'), '\n')
