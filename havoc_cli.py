@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import pprint
 import argparse
 from configparser import ConfigParser
 import tabulate
@@ -65,7 +66,7 @@ def format_output(command, data):
         print_table(command, data)
     else:
         data_out = {command: data}
-        print(json.dumps(data_out))
+        pprint.pprint(json.dumps(data_out))
 
 
 class HavocCMD(Cmd):
