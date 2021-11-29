@@ -54,7 +54,7 @@ def print_table(command, data):
     for k, v in data.items():
         if not isinstance(v, list) and not isinstance(v, dict):
             table[k] = v
-    print(tabulate(table, headers='keys', tablefmt='pretty'))
+    print(tabulate([table], headers='keys', tablefmt='pretty'))
     for k, v in data.items():
         if isinstance(v, list):
             print(f'\n{k}:')
