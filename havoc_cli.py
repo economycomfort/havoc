@@ -49,11 +49,14 @@ def convert_input(args, inp):
 
 
 def print_table(command, data):
+    print(f'{command} output:')
+    for d in data:
+        if not isinstance(data[d], dict):
+            print(tabulate(data[d], headers="keys", tablefmt='pretty'), '\n')
     for d in data:
         table = []
         if isinstance(data[d], dict):
             table.append(data[d])
-            print(f'{command}:')
             print(tabulate(table, headers="keys", tablefmt='pretty'), '\n')
 
 
