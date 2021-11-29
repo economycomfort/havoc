@@ -73,14 +73,14 @@ class HavocCMD(Cmd):
     def emptyline(self):
         pass
 
-    def do_exit(self):
+    def do_exit(self, inp):
         print('Bye')
         return True
 
     def help_exit(self):
         print('\nExit the application. Shorthand: x q Ctrl-D.\n')
 
-    def do_list_tasks(self):
+    def do_list_tasks(self, inp):
         list_tasks_response = h.list_tasks()
         format_output('list_tasks', list_tasks_response)
 
@@ -107,7 +107,7 @@ class HavocCMD(Cmd):
         print('\nForce quit a running task.')
         print('\n--task_name=<string> - (required) the name of the task to kill')
 
-    def do_list_task_types(self):
+    def do_list_task_types(self, inp):
         list_task_types_response = h.list_task_types()
         format_output('list_task_types', list_task_types_response)
 
@@ -148,7 +148,7 @@ class HavocCMD(Cmd):
         print('\nDelete the given task type.')
         print('\n--task_type=<string> - (required) the name of the task type to delete')
 
-    def do_list_users(self):
+    def do_list_users(self, inp):
         list_users_response = h.list_users()
         format_output('list_users', list_users_response)
 
@@ -200,7 +200,7 @@ class HavocCMD(Cmd):
         print('\nDelete an existing user.')
         print('\n--user_id=<string> - (required) the user_id of the user to be deleted')
 
-    def do_list_files(self):
+    def do_list_files(self, inp):
         list_files_response = h.list_files()
         format_output('list_files', list_files_response)
 
@@ -254,7 +254,7 @@ class HavocCMD(Cmd):
         print('\nDelete a file in the shared workspace.')
         print('\n--file_name=<string> - (required) the name of the file to be deleted.')
 
-    def do_list_portgroups(self):
+    def do_list_portgroups(self, inp):
         list_portgroups_response = h.list_portgroups()
         format_output('list_portgroups', list_portgroups_response)
 
@@ -306,7 +306,7 @@ class HavocCMD(Cmd):
         print('\nDelete an existing portgroup.')
         print('\n--portgroup_name=<string> - (required) the name of the portgroup to be deleted')
 
-    def do_list_domains(self):
+    def do_list_domains(self, inp):
         list_domains_response = h.list_domains()
         format_output('list_domains', list_domains_response)
 
