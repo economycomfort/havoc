@@ -414,8 +414,6 @@ class HavocCMD(Cmd):
         if inp == 'x' or inp == 'q':
             return self.do_exit()
 
-        print("Default: {}".format(inp))
-
     do_EOF = do_exit
     help_EOF = help_exit
 
