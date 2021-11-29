@@ -13,7 +13,7 @@ while getopts "ad:e:np:r:su:" flag; do
           if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
           fi
-          echo [${deploy_profile}] >> ~/.havoc/config
+          printf "\n[${deploy_profile}]\n" >> ~/.havoc/config
           read -p "Campaign ID: " campaign_id && echo "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
           read -p "API domain name: " api_domain_name && echo "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config
           read -p "API region: " api_region && echo "API_REGION = ${api_region}" >> ~/.havoc/config
@@ -228,7 +228,7 @@ while getopts "ad:e:np:r:su:" flag; do
           if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
           fi
-          echo [${deploy_profile}] >> ~/.havoc/config
+          printf "\n[${deploy_profile}]\n" >> ~/.havoc/config
           read -p "Campaign ID: " campaign_id && echo CAMPAIGN_ID = ${campaign_id} >> ~/.havoc/config
           read -p "API domain name: " api_domain_name && echo API_DOMAIN_NAME = ${api_domain_name} >> ~/.havoc/config
           read -p "API region: " api_region && echo API_REGION = ${api_region} >> ~/.havoc/config
