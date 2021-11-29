@@ -113,7 +113,7 @@ while getopts "ad:e:np:r:su:" flag; do
           fi
           python3_bin=./venv/bin/python3
           pip_bin=./venv/bin/pip3
-          python_pkg=$(${pip_bin} list)
+          python_pkg=$(${pip_bin} -q list)
           havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! "${havoc_exists}" ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
@@ -139,7 +139,7 @@ while getopts "ad:e:np:r:su:" flag; do
           fi
           python3_bin=./venv/bin/python3
           pip_bin=./venv/bin/pip3
-          python_pkg=$(${pip_bin} list)
+          python_pkg=$(${pip_bin} -q list)
           havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! "${havoc_exists}" ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
@@ -155,7 +155,7 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Could not find ${playbook} in havoc-playbooks."
             exit
           fi
-          ${pip_bin} install -r "./havoc-playbooks/${playbook}/requirements.txt"
+          ${pip_bin} -q install -r "./havoc-playbooks/${playbook}/requirements.txt"
           echo ${playbook} >> ~/.havoc/playbooks
           echo "Playbook ${playbook} installed."
           exit
@@ -172,7 +172,7 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Could not find a local config file. Run ./havoc -d or ./havoc -s first."
             exit
           fi
-          python_pkg=$(${pip_bin} list)
+          python_pkg=$(${pip_bin} -q list)
           havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
           if [ ! "${havoc_exists}" ]; then
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
@@ -283,7 +283,7 @@ if [ $# -eq 0 ]; then
   fi
   python3_bin=./venv/bin/python3
   pip_bin=./venv/bin/pip3
-  python_pkg=$(${pip_bin} list)
+  python_pkg=$(${pip_bin} -q list)
   havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
   if [ ! "${havoc_exists}" ]; then
     echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
