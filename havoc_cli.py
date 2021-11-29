@@ -91,7 +91,7 @@ class HavocCMD(Cmd):
 
     def do_get_task(self, inp):
         args = {'task_name': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         get_task_response = h.get_task(**command_args)
         format_output('get_task', get_task_response)
 
@@ -101,7 +101,7 @@ class HavocCMD(Cmd):
 
     def do_kill_task(self, inp):
         args = {'task_name': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         kill_task_response = h.kill_task(**command_args)
         format_output('kill_task', kill_task_response)
 
@@ -118,7 +118,7 @@ class HavocCMD(Cmd):
 
     def do_get_task_type(self, inp):
         args = {'task_type': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         get_task_type_response = h.get_task_type(**command_args)
         format_output('get_task_type', get_task_type_response)
 
@@ -128,7 +128,7 @@ class HavocCMD(Cmd):
 
     def do_create_task_type(self, inp):
         args = {'task_type': '', 'source_image': '', 'capabilities': '', 'cpu': '', 'memory': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         create_task_type_response = h.create_task_type(**command_args)
         format_output('create_task_type', create_task_type_response)
 
@@ -142,7 +142,7 @@ class HavocCMD(Cmd):
 
     def do_delete_task_type(self, inp):
         args = {'task_type': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         delete_task_type_response = h.delete_task_type(**command_args)
         format_output('delete_task_type', delete_task_type_response)
 
@@ -159,7 +159,7 @@ class HavocCMD(Cmd):
 
     def do_get_user(self, inp):
         args = {'user_id': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         get_user_response = h.get_user(**command_args)
         format_output('get_user', get_user_response)
 
@@ -169,7 +169,7 @@ class HavocCMD(Cmd):
 
     def do_create_user(self, inp):
         args = {'user_id': '', 'admin': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         create_user_response = h.create_user(**command_args)
         format_output('create_user', create_user_response)
 
@@ -180,7 +180,7 @@ class HavocCMD(Cmd):
 
     def do_update_user(self, inp):
         args = {'user_id': '', 'new_user_id': '', 'admin': '', 'reset_keys': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         update_user_response = h.update_user(**command_args)
         format_output('update_user', update_user_response)
 
@@ -194,7 +194,7 @@ class HavocCMD(Cmd):
 
     def do_delete_user(self, inp):
         args = {'user_id': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         delete_user_response = h.delete_user(**command_args)
         format_output('delete_user', delete_user_response)
 
@@ -211,7 +211,7 @@ class HavocCMD(Cmd):
 
     def do_get_file(self, inp):
         args = {'file_name': '', 'file_path': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         file_path = command_args['file_path']
         file_name = command_args['file_name']
         f = open(f'{file_path}/{file_name}', 'wb')
@@ -231,7 +231,7 @@ class HavocCMD(Cmd):
 
     def do_create_file(self, inp):
         args = {'file_name': '', 'file_path': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         file_path = command_args['file_path']
         file_name = command_args['file_name']
         f = open(f'{file_path}/{file_name}', 'rb')
@@ -248,7 +248,7 @@ class HavocCMD(Cmd):
 
     def do_delete_file(self, inp):
         args = {'file_name': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         delete_file_response = h.delete_file(**command_args)
         format_output('delete_file', delete_file_response)
 
@@ -265,7 +265,7 @@ class HavocCMD(Cmd):
 
     def do_get_portgroup(self, inp):
         args = {'portgroup_name': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         get_portgroup_response = h.get_portgroup(**command_args)
         format_output('get_portgroup', get_portgroup_response)
 
@@ -275,7 +275,7 @@ class HavocCMD(Cmd):
 
     def do_create_portgroup(self, inp):
         args = {'portgroup_name': '', 'portgroup_description': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         create_portgroup_response = h.create_portgroup(**command_args)
         format_output('create_portgroup', create_portgroup_response)
 
@@ -286,7 +286,7 @@ class HavocCMD(Cmd):
 
     def do_update_portgroup_rule(self, inp):
         args = {'portgroup_name': '', 'portgroup_action': '', 'ip_ranges': '', 'port': '', 'ip_protocol': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         update_portgroup_rule_response = h.update_portgroup_rule(**command_args)
         format_output('update_portgroup_rule', update_portgroup_rule_response)
 
@@ -300,7 +300,7 @@ class HavocCMD(Cmd):
 
     def do_delete_portgroup(self, inp):
         args = {'portgroup_name': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         delete_portgroup_response = h.delete_portgroup(**command_args)
         format_output('delete_portgroup', delete_portgroup_response)
 
@@ -317,7 +317,7 @@ class HavocCMD(Cmd):
 
     def do_get_domain(self, inp):
         args = {'domain_name': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         get_domain_response = h.get_domain(**command_args)
         format_output('get_domain', get_domain_response)
 
@@ -327,7 +327,7 @@ class HavocCMD(Cmd):
 
     def do_create_domain(self, inp):
         args = {'domain_name': '', 'hosted_zone': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         create_domain_response = h.create_domain(**command_args)
         format_output('create_domain', create_domain_response)
 
@@ -338,7 +338,7 @@ class HavocCMD(Cmd):
 
     def do_delete_domain(self, inp):
         args = {'domain_name': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         delete_domain_response = h.delete_domain(**command_args)
         format_output('delete_domain', delete_domain_response)
 
@@ -349,7 +349,7 @@ class HavocCMD(Cmd):
     def do_run_task(self, inp):
         args = {'task_name': '', 'task_type': '', 'task_host_name': '', 'task_domain_name': '', 'portgroups': '',
                 'end_time': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         run_task_response = h.run_task(**command_args)
         format_output('run_task', run_task_response)
 
@@ -364,7 +364,7 @@ class HavocCMD(Cmd):
 
     def do_instruct_task(self, inp):
         args = {'task_name': '', 'instruct_instance': '', 'instruct_command': '', 'instruct_args': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         instruct_task_response = h.instruct_task(**command_args)
         format_output('instruct_task', instruct_task_response)
 
@@ -378,7 +378,7 @@ class HavocCMD(Cmd):
 
     def do_get_task_results(self, inp):
         args = {'task_name': '', 'instruct_command': '', 'instruct_instance': ''}
-        command_args = self.convert_input(args, inp)
+        command_args = convert_input(args, inp)
         get_task_results_response = h.get_task_results(**command_args)
         if 'queue' not in get_task_results_response:
             format_output('get_task_results', get_task_results_response)
