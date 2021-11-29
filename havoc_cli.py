@@ -55,8 +55,12 @@ def print_table(command, data):
             print(tabulate([{k: v}], headers='keys', tablefmt='pretty'))
     for k, v in data.items():
         if isinstance(v, list):
-            print(tabulate([{k}], tablefmt='pretty'))
-            print(tabulate([v], headers='keys', tablefmt='pretty'))
+            print(f'{k}:')
+            print(tabulate([data['k']], tablefmt='pretty'))
+    for k, v in data.items():
+        if isinstance(v, dict):
+            print(f'{k}:')
+            print(tabulate([data['k']], headers='keys', tablefmt='pretty'))
 
 
 def format_output(command, data):
