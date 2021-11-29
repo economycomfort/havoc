@@ -179,7 +179,7 @@ while getopts "ad:e:np:r:su:" flag; do
             exit
           fi
           profile=${OPTARG}
-          python3 ./havoc_cli.py --profile ${profile}
+          python3_bin ./havoc_cli.py --profile ${profile}
           exit
           ;;
         r)
