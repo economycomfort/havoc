@@ -52,11 +52,11 @@ def print_table(command, data):
     print(f'{command} output:')
     for k, v in data.items():
         if not isinstance(v, list):
-            print(tabulate([{k: v}], tablefmt='pretty'), '\n')
+            print(tabulate([{k: v}], headers='keys', tablefmt='pretty'))
     for k, v in data.items():
         if isinstance(v, list):
-            print(tabulate([{k}], tablefmt='pretty'), '\n')
-            print(tabulate(v, headers='keys', tablefmt='pretty'), '\n')
+            print(tabulate([{k}], tablefmt='pretty'))
+            print(tabulate([v], headers='keys', tablefmt='pretty'))
 
 
 def format_output(command, data):
