@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import re
 import json
 import argparse
@@ -17,7 +18,8 @@ profile = init_args.profile
 
 # Load the configuration file
 config = ConfigParser()
-config.read('~/.havoc/config')
+config_file = os.path.expanduser('~/.havoc/config')
+config.read(config_file)
 
 # Get api_key and secret_key
 if profile:
