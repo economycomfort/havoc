@@ -43,7 +43,7 @@ while getopts "ad:e:np:r:su:" flag; do
           fi
           if [ ${deploy} == aws ]; then
             echo "Deploying a new ./havoc campaign..."
-            python3 -m venv venv
+            ${python3_bin} -m venv venv
             python3_bin=./venv/bin/python3
             pip_bin=./venv/bin/pip3
             touch havoc-deploy/aws/terraform/terraform.tfvars
@@ -128,7 +128,7 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Playbook ${playbook} is not installed. Exiting."
             exit
           fi
-          python3 "./havoc-playbooks/${playbook}/${playbook}.py --profile ${profile}"
+          ${python3_bin} "./havoc-playbooks/${playbook}/${playbook}.py --profile ${profile}"
           exit
           ;;
         n)
@@ -179,7 +179,7 @@ while getopts "ad:e:np:r:su:" flag; do
             exit
           fi
           profile=${OPTARG}
-          python3_bin ./havoc_cli.py --profile ${profile}
+          ${python3_bin} ./havoc_cli.py --profile ${profile}
           exit
           ;;
         r)
@@ -210,7 +210,7 @@ while getopts "ad:e:np:r:su:" flag; do
             exit
           fi
           echo "Setting up local environment..."
-          python3 -m venv venv
+          ${python3_bin} -m venv venv
           python3_bin=./venv/bin/python3
           pip_bin=./venv/bin/pip3
           ${pip_bin} install -r ./requirements.txt
