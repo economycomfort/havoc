@@ -50,14 +50,13 @@ def convert_input(args, inp):
 
 def print_table(command, data):
     print(f'{command} output:')
-    for d in data:
-        if not isinstance(data[d], dict):
-            print(tabulate(data[d], headers="keys", tablefmt='pretty'), '\n')
-    table = []
-    for d in data:
-        if isinstance(data[d], dict):
-            table.append(data[d])
-            print(tabulate(table, headers="keys", tablefmt='pretty'), '\n')
+    for k, v in data.items():
+        if not isinstance(v, list):
+            print(tabulate([{k: v}], tablefmt='pretty'), '\n')
+    for k, v in data.items():
+        if isinstance(v, list):
+            print(tabulate([{k}], tablefmt='pretty'), '\n')
+            print(tabulate(v, headers='keys', tablefmt='pretty'), '\n')
 
 
 def format_output(command, data):
