@@ -50,10 +50,10 @@ def convert_input(args, inp):
 
 def print_table(command, data):
     print(f'{command} output:')
-    table = []
+    table = {}
     for k, v in data.items():
         if not isinstance(v, list) and not isinstance(v, dict):
-            table.append({k: v})
+            table[k] = v
     print(tabulate(table, headers='keys', tablefmt='pretty'))
     for k, v in data.items():
         if isinstance(v, list):
