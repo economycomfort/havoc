@@ -56,11 +56,11 @@ def print_table(command, data):
     for k, v in data.items():
         if isinstance(v, list):
             print(f'{k}:')
-            print(tabulate([data['k']], tablefmt='pretty'))
+            print(tabulate([data[k]], tablefmt='pretty'))
     for k, v in data.items():
         if isinstance(v, dict):
             print(f'{k}:')
-            print(tabulate([data['k']], headers='keys', tablefmt='pretty'))
+            print(tabulate([data[k]], headers='keys', tablefmt='pretty'))
 
 
 def format_output(command, data):
