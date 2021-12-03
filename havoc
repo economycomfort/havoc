@@ -90,17 +90,13 @@ while getopts "ad:e:np:r:su:" flag; do
               output=table
             fi
             echo OUTPUT = ${output} >> ~/.havoc/config
-            api_domain_name=$(printf '%s\n' "${tf_out}" | sed -n '/^API_DOMAIN_NAME/p') && echo ${api_domain_name} >> ~/.havoc/config && echo ${api_domain_name}
-            api_key=$(printf '%s\n' "${tf_out}" | sed -n '/^API_KEY/p') && echo ${api_key} >> ~/.havoc/config && echo ${api_key}
-            secret=$(printf '%s\n' "${tf_out}" | sed -n '/^SECRET/p') && echo ${secret} >> ~/.havoc/config && echo ${secret}
-            api_region=$(printf '%s\n' "${tf_out}" | sed -n '/^API_REGION/p') && echo ${api_region} >> ~/.havoc/config && echo ${api_region}
-            campaign_admin_email=$(printf '%s\n' "${tf_out}" | sed -n '/^CAMPAIGN_ADMIN_EMAIL/p') && echo ${campaign_admin_email} >> ~/.havoc/config && echo ${campaign_admin_email}
-            campaign_id=$(printf '%s\n' "${tf_out}" | sed -n '/^CAMPAIGN_ID/p') && echo ${campaign_id} >> ~/.havoc/config && echo ${campaign_id}
+            api_domain_name=$(printf '%s\n' "${tf_out}" | sed -rn '/^API_DOMAIN_NAME = \"(.*)\"/\1/p') && echo "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config && echo "API_DOMAIN_NAME = ${api_domain_name}"
+            api_key=$(printf '%s\n' "${tf_out}" | sed -rn '/^API_KEY = \"(.*)\"/\1/p') && echo "API_KEY = ${api_key}" >> ~/.havoc/config && echo "API_KEY = ${api_key}"
+            secret=$(printf '%s\n' "${tf_out}" | sed -rn '/^SECRET = \"(.*)\"/\1/p') && echo "SECRET = ${secret}" >> ~/.havoc/config && echo "SECRET = ${secret}"
+            api_region=$(printf '%s\n' "${tf_out}" | sed -rn '/^API_REGION = \"(.*)\"/\1/p') && echo "API_REGION = ${api_region}" >> ~/.havoc/config && echo "API_REGION =  ${api_region}"
+            campaign_admin_email=$(printf '%s\n' "${tf_out}" | sed -rn '/^CAMPAIGN_ADMIN_EMAIL = \"(.*)\"/\1/p') && echo "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}" >> ~/.havoc/config && echo "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}"
+            campaign_id=$(printf '%s\n' "${tf_out}" | sed -rn '/^CAMPAIGN_ID = \"(.*)\"/\1/p') && echo "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config && echo "CAMPAIGN_ID = ${campaign_id}"
             ${pip_bin} install -r ./requirements.txt
-            for d in ./havoc-playbooks/*/ ; do
-              ${pip_bin} install -r "${d}/requirements.txt"
-              echo ${d} >> ~/.havoc/playbooks
-            done
             echo "Done."
             exit
           fi
@@ -146,17 +142,52 @@ while getopts "ad:e:np:r:su:" flag; do
             exit
           fi
           playbook=${OPTARG}
-          playbook_exists=$(cat ~/.havoc/playbooks | sed -n '/^${playbook}')
-          if [ ${playbook_exists} ]; then
-            echo "Playbook ${playbook} is already installed."
-            exit
-          fi
           if [ ! -f "./havoc-playbooks/${playbook}/requirements.txt" ]; then
             echo "Could not find ${playbook} in havoc-playbooks."
             exit
           fi
+          if [ ! -f "./havoc-playbooks/${playbook}/${playbook}.ini.sample" ]; then
+            echo "Could not find ${playbook}.ini.sample in havoc-playbooks/${playbook}."
+            exit
+          fi
+          echo "If you have previously installed and configured this playbook,"
+          echo "installing it again will delete the existing configuration."
+          read -p "Are you sure you want to continue? [Y/N]: " user_continue
+          if [[ ! ${user_continue} == y* ]] || [[ ${user_continue} == Y* ]]; then
+            exit
+          fi
+          input="./havoc-playbooks/${playbook}/${playbook}.ini.sample"
+          echo "Creating a customized ${playbook}.ini file."
+          echo "Provide a value for each parameter."
+          echo "Press enter without entering a parameter to accept the default."
+          if [ -f ./havoc-playbooks/${playbook}/${playbook}.ini ]; then
+            rm ./havoc-playbooks/${playbook}/${playbook}.ini
+          fi
+          touch ./havoc-playbooks/${playbook}/${playbook}.ini
+          while read -r line
+          do
+            if [[ ${line} == \[\S+\] ]]; then
+              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+              continue
+            fi
+            if [ -z ${line} ]; then
+              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+              continue
+            fi
+            parameter=$(printf '%s\n' "${line}" | sed -rn '/^(.*) = .*/\1/p')
+            default_value = $(printf '%s\n' "${line}" | sed -rn '/^.* = (.*)/\1/p')
+            read -p "${parameter} [${default_value}]: " user_response
+            if [ ! ${user_response} ]; then
+              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+            else
+              echo "${parameter} = ${user_response}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+            fi
+          done < "${input}"
           ${pip_bin} install -r "./havoc-playbooks/${playbook}/requirements.txt"
-          echo ${playbook} >> ~/.havoc/playbooks
+          playbook_exists=$(cat ~/.havoc/playbooks | sed -n '/^${playbook}')
+          if [ ! "${playbook_exists}" ]; then
+            echo "${playbook}" >> ~/.havoc/playbooks
+          fi
           echo "Playbook ${playbook} installed."
           exit
           ;;
