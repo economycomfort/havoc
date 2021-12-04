@@ -220,6 +220,14 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Could not find terraform in your path. Please install terraform and/or add it to your path before continuing."
             exit
           fi
+          if [ ! /havoc-deploy/aws/terraform/terraform.tfvars ]; then
+            echo "Could not find an existing campaign to destroy. Exiting..."
+            exit
+          fi
+          if [ ! /havoc-deploy/aws/terraform/terraform.tfstate ]; then
+            echo "Could not find an existing campaign to destroy. Exiting..."
+            exit
+          fi
           deploy=${OPTARG}
           if [ ${deploy} == aws ]; then
             read -p "Are you sure you want to destroy your ./havoc deployment? (Y/N) [N]: " destroy
