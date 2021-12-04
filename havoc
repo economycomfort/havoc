@@ -9,10 +9,17 @@ while getopts "ad:e:np:r:su:" flag; do
             exit
           fi
           echo "Creating a new credential profile..."
-          read -p "Credential profile name [default]: " deploy_profile
-          if [ ! "${deploy_profile}" ]; then
+          while [ ! -z deploy_profile ]; do
+            read -p "./havoc credential profile name [default]: " deploy_profile
+            if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
-          fi
+            fi
+            profile_exists=$(cat ~/.havoc/config | sed -rn "s/\[${deploy_profile}\]/p")
+            if [ -z profile_exists ]; then
+              echo "Profile ${deploy_profile} already exists."
+              unset deploy_profile
+            fi
+          done
           printf "\n[${deploy_profile}]\n" >> ~/.havoc/config
           read -p "Campaign ID: " campaign_id && echo "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
           read -p "API domain name: " api_domain_name && echo "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config
@@ -80,10 +87,17 @@ while getopts "ad:e:np:r:su:" flag; do
             if [ ! -f ~/.havoc/playbooks ]; then
               touch ~/.havoc/playbooks
             fi
-            read -p "./havoc credential profile name [default]: " deploy_profile
-            if [ ! "${deploy_profile}" ]; then
-              deploy_profile=default
-            fi
+            while [ ! -z deploy_profile ]; do
+              read -p "./havoc credential profile name [default]: " deploy_profile
+              if [ ! "${deploy_profile}" ]; then
+                deploy_profile=default
+              fi
+              profile_exists=$(cat ~/.havoc/config | sed -rn "s/\[${deploy_profile}\]/p")
+              if [ -z profile_exists ]; then
+                echo "Profile ${deploy_profile} already exists."
+                unset deploy_profile
+              fi
+            done
             printf "\n[${deploy_profile}]\n" >> ~/.havoc/config
             read -p "Output format (table|json) [table]: " output
             if [ ! "${output}" ]; then
