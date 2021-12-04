@@ -220,11 +220,11 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Could not find terraform in your path. Please install terraform and/or add it to your path before continuing."
             exit
           fi
-          if [ ! /havoc-deploy/aws/terraform/terraform.tfvars ]; then
+          if [ ! -f havoc-deploy/aws/terraform/terraform.tfvars ]; then
             echo "Could not find an existing campaign to destroy. Exiting..."
             exit
           fi
-          if [ ! /havoc-deploy/aws/terraform/terraform.tfstate ]; then
+          if [ ! -f havoc-deploy/aws/terraform/terraform.tfstate ]; then
             echo "Could not find an existing campaign to destroy. Exiting..."
             exit
           fi
@@ -299,7 +299,12 @@ while getopts "ad:e:np:r:su:" flag; do
           if [ ${deploy} == aws ]; then
             echo "Getting updates..."
             git pull origin main --recurse-submodules
-            tf_out=$(terraform -chdir=havoc-deploy/aws apply --auto-approve 2>&1) || echo ${tf_out} 1>&2
+            if [ -f havoc-deploy/aws/terraform/terraform.tfstate ]; then
+              echo "Found existing campaign. Applying terraform updates..."
+              tf_out=$(terraform -chdir=havoc-deploy/aws apply --auto-approve 2>&1) || echo ${tf_out} 1>&2
+            else
+              echo "No existing campaign found. Skipping terraform updates."
+            fi
             ${pip_bin} install -r ./requirements.txt
             ${pip_bin} install --upgrade havoc
             echo "Update complete"
