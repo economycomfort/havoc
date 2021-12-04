@@ -303,7 +303,7 @@ while getopts "ad:e:np:r:su:" flag; do
             git pull origin main --recurse-submodules --force
             if [ -f havoc-deploy/aws/terraform/terraform.tfstate ]; then
               echo "Found existing campaign. Applying terraform updates..."
-              tf_out=$(terraform -chdir=havoc-deploy/aws apply --auto-approve 2>&1) || echo ${tf_out} 1>&2
+              tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply --auto-approve 2>&1) || echo ${tf_out} 1>&2
             else
               echo "No existing campaign found. Skipping terraform updates."
             fi
