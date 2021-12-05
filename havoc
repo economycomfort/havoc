@@ -92,7 +92,7 @@ while getopts "ad:e:np:r:su:" flag; do
               if [ ! "${deploy_profile}" ]; then
                 deploy_profile=default
               fi
-              profile_exists=$(cat ~/.havoc/config | sed -rn "s/\[${deploy_profile}\]/p")
+              profile_exists=$(cat ~/.havoc/config | sed -n "/\[${deploy_profile}\]/p")
               if [ ${profile_exists} ]; then
                 echo "Profile ${deploy_profile} already exists."
                 unset deploy_profile
@@ -104,13 +104,21 @@ while getopts "ad:e:np:r:su:" flag; do
               output=table
             fi
             echo OUTPUT = ${output} >> ~/.havoc/config
-            api_domain_name=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_DOMAIN_NAME = "(.*)"/\1/p') && echo "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config && echo "API_DOMAIN_NAME = ${api_domain_name}"
-            api_key=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_KEY = "(.*)"/\1/p') && echo "API_KEY = ${api_key}" >> ~/.havoc/config && echo "API_KEY = ${api_key}"
-            secret=$(printf '%s\n' "${tf_out}" | sed -rn 's/^SECRET = "(.*)"/\1/p') && echo "SECRET = ${secret}" >> ~/.havoc/config && echo "SECRET = ${secret}"
-            api_region=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_REGION = "(.*)"/\1/p') && echo "API_REGION = ${api_region}" >> ~/.havoc/config && echo "API_REGION =  ${api_region}"
-            campaign_admin_email=$(printf '%s\n' "${tf_out}" | sed -rn 's/^CAMPAIGN_ADMIN_EMAIL = "(.*)"/\1/p') && echo "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}" >> ~/.havoc/config && echo "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}"
-            campaign_id=$(printf '%s\n' "${tf_out}" | sed -rn 's/^CAMPAIGN_ID = "(.*)"/\1/p') && echo "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config && echo "CAMPAIGN_ID = ${campaign_id}"
+            api_domain_name=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_DOMAIN_NAME = "(.*)"/\1/p') && echo "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config
+            api_key=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_KEY = "(.*)"/\1/p') && echo "API_KEY = ${api_key}" >> ~/.havoc/config
+            secret=$(printf '%s\n' "${tf_out}" | sed -rn 's/^SECRET = "(.*)"/\1/p') && echo "SECRET = ${secret}" >> ~/.havoc/config
+            api_region=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_REGION = "(.*)"/\1/p') && echo "API_REGION = ${api_region}" >> ~/.havoc/config
+            campaign_admin_email=$(printf '%s\n' "${tf_out}" | sed -rn 's/^CAMPAIGN_ADMIN_EMAIL = "(.*)"/\1/p') && echo "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}" >> ~/.havoc/config
+            campaign_id=$(printf '%s\n' "${tf_out}" | sed -rn 's/^CAMPAIGN_ID = "(.*)"/\1/p') && echo "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
             ${pip_bin} install -r ./requirements.txt
+            echo "The following campaign parameters have been written to you ~/.havoc/config file:"
+            echo "API_DOMAIN_NAME = ${api_domain_name}"
+            echo "API_KEY = ${api_key}"
+            echo "SECRET = ${secret}"
+            echo "API_REGION =  ${api_region}"
+            echo "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}"
+            echo "CAMPAIGN_ID = ${campaign_id}"
+            echo ""
             echo "Done."
             exit
           fi
