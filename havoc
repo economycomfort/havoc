@@ -63,7 +63,7 @@ while getopts "ad:e:np:r:su:" flag; do
             read -p "./havoc campaign administrator email: " campaign_admin_email
             echo campaign_admin_email = \"${campaign_admin_email}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "Task results queue expiration: " results_queue_expiration
-            echo results_queue_expiration = ${results_queue_expiration}
+            echo results_queue_expiration = ${results_queue_expiration} >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "Enable custom domain name? (Y/N): " enable_domain
             if [[ ${enable_domain} == y* ]] || [[ ${enable_domain} == Y* ]]; then
               echo enable_domain_name = true >> havoc-deploy/aws/terraform/terraform.tfvars
