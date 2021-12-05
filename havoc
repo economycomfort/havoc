@@ -206,7 +206,7 @@ while getopts "ad:e:np:r:su:" flag; do
             fi
             parameter=$(printf '%s\n' "${line}" | sed -rn 's/^(.*) = .*/\1/p')
             default_value=$(printf '%s\n' "${line}" | sed -rn 's/^.* = (.*)/\1/p')
-            read -p "${parameter} [${default_value}]: " user_response
+            read -p "${parameter} [${default_value}]: " user_response < /dev/tty
             if [ ! ${user_response} ]; then
               echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
             else
