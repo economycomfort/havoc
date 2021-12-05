@@ -9,13 +9,13 @@ while getopts "ad:e:np:r:su:" flag; do
             exit
           fi
           echo "Creating a new credential profile..."
-          while [ ! -z deploy_profile ]; do
+          while [ ! ${deploy_profile} ]; do
             read -p "./havoc credential profile name [default]: " deploy_profile
             if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
             fi
-            profile_exists=$(cat ~/.havoc/config | sed -rn "s/\[${deploy_profile}\]/p")
-            if [ -z profile_exists ]; then
+            profile_exists=$(cat ~/.havoc/config | sed -n "/\[${deploy_profile}\]/p")
+            if [ ${profile_exists} ]; then
               echo "Profile ${deploy_profile} already exists."
               unset deploy_profile
             fi
@@ -87,13 +87,13 @@ while getopts "ad:e:np:r:su:" flag; do
             if [ ! -f ~/.havoc/playbooks ]; then
               touch ~/.havoc/playbooks
             fi
-            while [ ! -z deploy_profile ]; do
+            while [ ! ${deploy_profile} ]; do
               read -p "./havoc credential profile name [default]: " deploy_profile
               if [ ! "${deploy_profile}" ]; then
                 deploy_profile=default
               fi
               profile_exists=$(cat ~/.havoc/config | sed -rn "s/\[${deploy_profile}\]/p")
-              if [ -z profile_exists ]; then
+              if [ ${profile_exists} ]; then
                 echo "Profile ${deploy_profile} already exists."
                 unset deploy_profile
               fi
