@@ -196,11 +196,11 @@ while getopts "ad:e:np:r:su:" flag; do
           touch ./havoc-playbooks/${playbook}/${playbook}.ini
           while read -r line
           do
-            if [[ ${line} == \[\S+\] ]]; then
+            if [[ ${line} == \[*\] ]]; then
               echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
               continue
             fi
-            if [ -z ${line} ]; then
+            if [ ${line}x == x ]; then
               echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
               continue
             fi
