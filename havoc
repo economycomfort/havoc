@@ -200,7 +200,7 @@ while getopts "ad:e:np:r:su:" flag; do
               echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
               continue
             fi
-            if [ ${line}x == x ]; then
+            if [[ ${line}x == x ]]; then
               echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
               continue
             fi
@@ -214,7 +214,7 @@ while getopts "ad:e:np:r:su:" flag; do
             fi
           done < "${input}"
           ${pip_bin} install -r "./havoc-playbooks/${playbook}/requirements.txt"
-          playbook_exists=$(cat ~/.havoc/playbooks | sed -n '/^${playbook}')
+          playbook_exists=$(cat ~/.havoc/playbooks | sed -n '/^${playbook}/p')
           if [ ! "${playbook_exists}" ]; then
             echo "${playbook}" >> ~/.havoc/playbooks
           fi
