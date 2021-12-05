@@ -166,6 +166,7 @@ while getopts "ad:e:np:r:su:" flag; do
             exit
           fi
           PS3="Select a playbook to install: "
+          array=(havoc-playbooks/*/)
           select dir in "${array[@]%/}"; do
             echo "Installing playbook ${dir}."
             break
@@ -179,8 +180,7 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Could not find ${playbook}.ini.sample in havoc-playbooks/${playbook}."
             exit
           fi
-          echo "If you have previously installed and configured this playbook,"
-          echo "installing it again will delete the existing configuration."
+          echo "If you have previously installed this playbook, installing it again will delete the existing configuration."
           read -p "Are you sure you want to continue? [Y/N]: " user_continue
           if [[ ! ${user_continue} == y* ]] || [[ ! ${user_continue} == Y* ]]; then
             exit
