@@ -182,7 +182,8 @@ while getopts "ad:e:np:r:su:" flag; do
           fi
           echo "If you have previously installed this playbook, installing it again will delete the existing configuration."
           read -p "Are you sure you want to continue? [Y/N]: " user_continue
-          if [[ ! ${user_continue} == y* ]] || [[ ! ${user_continue} == Y* ]]; then
+          if [[ ! ${user_continue} == y* ]] && [[ ! ${user_continue} == Y* ]]; then
+            echo "Exiting..."
             exit
           fi
           input="./havoc-playbooks/${playbook}/${playbook}.ini.sample"
