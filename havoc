@@ -158,7 +158,22 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Playbook ${playbook} is not installed. Exiting."
             exit
           fi
-          ${python3_bin} "./havoc-playbooks/${playbook}/${playbook}.py --profile ${profile}"
+          if [ ! "${profile}" ]; then
+            default_profile_exists=$(cat ~/.havoc/config | sed -n "/\[default\]/p")
+            if [ ! "${default_profile_exists}" ]; then
+              echo "No profile specified and default profile not present. Exiting..."
+              exit
+            else
+              profile=default
+            fi
+          else
+            profile_exists=$(cat ~/.havoc/config | sed -n "/\[${profile}\]/p")
+            if [ ! "${profile_exists}" ]; then
+              echo "Profile ${profile} not found in ~/.havoc/config. Exiting..."
+              exit
+            fi
+          fi
+          ${python3_bin} "../../havoc-playbooks/${playbook}/${playbook}.py --profile ${profile}"
           exit
           ;;
         n)
