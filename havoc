@@ -122,7 +122,7 @@ while getopts "ad:e:np:r:su:" flag; do
             campaign_id=$(printf '%s\n' "${tf_out}" | sed -rn 's/^CAMPAIGN_ID = "(.*)"/\1/p') && printf '%s\n' "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
             ${pip_bin} install -r ./requirements.txt
             echo ""
-            echo "The following campaign parameters have been written to you ~/.havoc/config file:"
+            echo "The following campaign parameters have been written to your ~/.havoc/config file:"
             echo "API_DOMAIN_NAME = ${api_domain_name}"
             echo "API_KEY = ${api_key}"
             echo "SECRET = ${secret}"
