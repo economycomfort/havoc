@@ -172,7 +172,7 @@ while getopts "ad:e:np:r:su:" flag; do
               exit
             fi
           fi
-          ${python3_bin} "../../havoc-playbooks/${playbook}/${playbook}.py --profile ${profile}"
+          ${python3_bin} ./havoc-playbooks/${playbook}/${playbook}.py --profile ${profile}
           exit
           ;;
         n)
