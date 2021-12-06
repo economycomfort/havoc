@@ -149,10 +149,9 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s first."
             exit
           fi
-          playbook_profile=${OPTARG}
-          IFS=' ' read -r -a array <<< ${playbook_profile}
-          playbook=${array[0]}
-          profile=${array[1]}
+          IFS=' ' read -r -a array <<< "${@}"
+          playbook=${array[1]}
+          profile=${array[2]}
           playbook_exists=$(cat ~/.havoc/playbooks | sed -n "/^${playbook}/p")
           if [ ! "${playbook_exists}" ]; then
             echo "Playbook ${playbook} is not installed. Exiting."
