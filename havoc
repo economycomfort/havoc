@@ -77,6 +77,14 @@ while getopts "ad:e:np:r:su:" flag; do
             echo "Starting terraform tasks..."
             terraform -chdir=havoc-deploy/aws/terraform init
             tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply --auto-approve 2>&1) || echo ${tf_out} 1>&2
+            if [[ ${tf_out} == *Error:* ]]; then
+              echo ""
+              echo "Terraform deployment encountered errors, rolling back changes..."
+              terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve
+              echo ""
+              echo "Rollback completed. Exiting..."
+              exit
+            fi
             echo "Terraform tasks completed."
             if [ ! -d ~/.havoc ]; then
               mkdir ~/.havoc
