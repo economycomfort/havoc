@@ -397,6 +397,9 @@ class HavocCMD(Cmd):
             format_output('get_task_results', get_task_results_response)
         else:
             filtered_results = []
+            if not instruct_command and not instruct_instance:
+                for result in get_task_results_response['queue']:
+                    filtered_results.append(result)
             if instruct_command and not instruct_instance:
                 for result in get_task_results_response['queue']:
                     if result['instruct_command'] == instruct_command:
