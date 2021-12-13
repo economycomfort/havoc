@@ -385,15 +385,17 @@ class HavocCMD(Cmd):
     def do_get_task_results(self, inp):
         args = {'task_name': '', 'instruct_command': '', 'instruct_instance': ''}
         command_args = convert_input(args, inp)
+        instruct_command, instruct_instance = None, None
+        if 'instruct_command' in command_args and command_args['instruct_command']:
+            instruct_command = command_args['instruct_command']
+            del command_args['instruct_command']
+        if 'instruct_instance' in command_args and command_args['instruct_instance']:
+            instruct_instance = command_args['instruct_instance']
+            del command_args['instruct_instance']
         get_task_results_response = h.get_task_results(**command_args)
         if 'queue' not in get_task_results_response:
             format_output('get_task_results', get_task_results_response)
         else:
-            instruct_command, instruct_instance = None, None
-            if 'instruct_command' in command_args and command_args['instruct_command']:
-                instruct_command = command_args['instruct_command']
-            if 'instruct_instance' in command_args and command_args['instruct_instance']:
-                instruct_instance = command_args['instruct_instance']
             filtered_results = []
             if instruct_command and not instruct_instance:
                 for result in get_task_results_response['queue']:
@@ -420,7 +422,7 @@ class HavocCMD(Cmd):
 
     def default(self, inp):
         if inp == 'x' or inp == 'q':
-            return self.do_exit()
+            return self.do_exit('x')
 
     do_EOF = do_exit
     help_EOF = help_exit
