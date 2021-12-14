@@ -4,6 +4,7 @@ import os
 import re
 import json
 import argparse
+import time as t
 from configparser import ConfigParser
 from tabulate import tabulate
 from cmd2 import Cmd
@@ -380,7 +381,7 @@ class HavocCMD(Cmd):
         print('\n--instruct_instance=<string> - (required) a unique string to associate with the instruction (defaults '
               'to \'havoc\')')
         print('\n--instruct_command=<string> - (required) the command to send to the task')
-        print('\n--instruct_args=<string> - (optional) a dictionary of arguments to pass with the command')
+        print('\n--instruct_args=<dict> - (optional) a dictionary of arguments to pass with the command')
 
     def do_get_task_results(self, inp):
         args = {'task_name': '', 'instruct_command': '', 'instruct_instance': ''}
@@ -422,6 +423,27 @@ class HavocCMD(Cmd):
         print('\n--task_name=<string> - (required) the name of the task to retrieve results from')
         print('\n--instruct_instance=<string> - (optional) the instruct_instance to retrieve results for')
         print('\n--instruct_command=<string> - (optional) the command to retrieve results for')
+
+    def wait_for_c2(self, inp):
+        args = {'task_name': ''}
+        command_args = convert_input(args, inp)
+        command_finished = None
+        try:
+            while not command_finished:
+                command_results = h.get_task_results(**command_args)
+                for entry in command_results['queue']:
+                    instruct_command = entry['instruct_command']
+                    if instruct_command == 'agent_status_monitor' or instruct_command == 'session_status_monitor':
+                        command_finished = True
+                        format_output('wait_for_c2', entry)
+                if not command_finished:
+                    t.sleep(5)
+        except KeyboardInterrupt:
+            print('wait_for_c2 stopped.')
+
+    def help_wait_for_c2(self):
+        print('\nWait for a task to receive a C2 agent or session connection.')
+        print('\n--task_name=<string> - (required) the name of the task that the C2 agent or session will to connect to')
 
     def default(self, inp):
         if inp == 'x' or inp == 'q':
