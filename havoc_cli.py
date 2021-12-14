@@ -2,6 +2,7 @@
 
 import os
 import re
+import ast
 import json
 import argparse
 import time as t
@@ -44,8 +45,10 @@ def convert_input(args, inp):
     for l in line:
         arg = re.search('([^=]+)=(.*)', l)
         if arg:
-            if arg.group(1) in args:
+            if arg.group(1) in args and arg.group(1) != 'instruct_args':
                 args[arg.group(1)] = arg.group(2).strip()
+            if arg.group(1) in args and arg.group(1) == 'instruct_args':
+                args[arg.group(1)] = ast.literal_eval(arg.group(2))
     return args
 
 
