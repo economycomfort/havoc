@@ -45,10 +45,14 @@ def convert_input(args, inp):
     for l in line:
         arg = re.search('([^=]+)=(.*)', l)
         if arg:
-            if arg.group(1) in args and arg.group(1) != 'instruct_args':
+            if arg.group(1) in args and arg.group(1) != 'instruct_args' and arg.group(1) != 'portgroups':
                 args[arg.group(1)] = arg.group(2).strip()
             if arg.group(1) in args and arg.group(1) == 'instruct_args':
                 args[arg.group(1)] = ast.literal_eval(arg.group(2))
+            if arg.group(1) in args and arg.group(1) == 'portgroups':
+                args[arg.group(1)] = []
+                for pg in arg.group(2).split(','):
+                    args[arg.group(1)].append(pg)
     return args
 
 
@@ -369,7 +373,7 @@ class HavocCMD(Cmd):
         print('\n--task_type=<string> - (required) the type of Attack Container to be executed')
         print('\n--task_host_name=<string> - (optional) a host name to associate with the task')
         print('\n--task_domain_name=<string> - (optional) a domain name to associate with the task')
-        print('\n--portgroups=<string> - (optional) a list of portgroups to associate with the task')
+        print('\n--portgroups=<string> - (optional) a comma separated list of portgroups to associate with the task')
         print('\n--end_time=<string> - (optional) terminate the task at the given time')
 
     def do_instruct_task(self, inp):
