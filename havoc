@@ -101,7 +101,7 @@ while getopts "acd:e:p:r:su:" flag; do
               echo "${parameter} = ${user_response}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
             fi
           done < "${input}"
-          if [ -f "../havoc-playbooks/${playbook}/${playbook}.ini.tmp" ]; then
+          if [ -f "./havoc-playbooks/${playbook}/${playbook}.ini.tmp" ]; then
             rm ./havoc-playbooks/${playbook}/${playbook}.ini.tmp
           fi
           ${pip_bin} install -r "./havoc-playbooks/${playbook}/requirements.txt"
@@ -233,7 +233,7 @@ while getopts "acd:e:p:r:su:" flag; do
           profile=${array[2]}
           playbook_exists=$(cat ~/.havoc/playbooks | sed -n "/^${playbook}/p")
           if [ ! "${playbook_exists}" ]; then
-            echo "Playbook ${playbook} is not installed. Exiting."
+            echo "Playbook ${playbook} is not configured. Exiting."
             exit
           fi
           if [ ! "${profile}" ]; then
