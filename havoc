@@ -70,12 +70,14 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "Exiting..."
             exit
           fi
-          input="./havoc-playbooks/${playbook}/${playbook}.ini.sample"
           echo "Creating a customized ${playbook}.ini file."
           echo "Provide a value for each parameter."
           echo "Press enter without providing a value to accept the default."
-          if [ -f ./havoc-playbooks/${playbook}/${playbook}.ini ]; then
-            rm ./havoc-playbooks/${playbook}/${playbook}.ini
+          if [ -f "./havoc-playbooks/${playbook}/${playbook}.ini" ]; then
+            mv ./havoc-playbooks/${playbook}/${playbook}.ini ./havoc-playbooks/${playbook}/${playbook}.ini.tmp
+            input="./havoc-playbooks/${playbook}/${playbook}.ini.tmp"
+          else
+            input="./havoc-playbooks/${playbook}/${playbook}.ini.sample"
           fi
           touch ./havoc-playbooks/${playbook}/${playbook}.ini
           while read -r line
@@ -99,6 +101,9 @@ while getopts "acd:e:p:r:su:" flag; do
               echo "${parameter} = ${user_response}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
             fi
           done < "${input}"
+          if [ -f "../havoc-playbooks/${playbook}/${playbook}.ini.tmp" ]; then
+            rm ./havoc-playbooks/${playbook}/${playbook}.ini.tmp
+          fi
           ${pip_bin} install -r "./havoc-playbooks/${playbook}/requirements.txt"
           playbook_exists=$(cat ~/.havoc/playbooks | sed -n "/^${playbook}/p")
           if [ ! ${playbook_exists} ]; then
