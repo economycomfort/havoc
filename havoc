@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getopts "ad:e:np:r:su:" flag; do
+while getopts "acd:e:p:r:su:" flag; do
     case "${flag}" in
         a)
           # Add a new credential profile to the local config.
@@ -33,6 +33,78 @@ while getopts "ad:e:np:r:su:" flag; do
             fi
           echo "OUTPUT = ${output}" >> ~/.havoc/config
           echo "Done."
+          exit
+          ;;
+        c)
+          # Configure a playbook
+          if [ ! -d ./venv ]; then
+            echo "No virtualenv found. Run ./havoc -d or ./havoc -s first."
+            exit
+          fi
+          python3_bin=./venv/bin/python3
+          pip_bin=./venv/bin/pip3
+          python_pkg=$(${pip_bin} --disable-pip-version-check list)
+          havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
+          if [ ! "${havoc_exists}" ]; then
+            echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
+            exit
+          fi
+          PS3="Select a playbook to install: "
+          array=(havoc-playbooks/*/)
+          select dir in "${array[@]%/}"; do
+            echo "Installing playbook ${dir}."
+            break
+          done
+          playbook=$(printf '%s\n' "${dir}" | sed -rn 's/.*\/(.*)/\1/p')
+          if [ ! -f "./havoc-playbooks/${playbook}/requirements.txt" ]; then
+            echo "Could not find ${playbook} in havoc-playbooks."
+            exit
+          fi
+          if [ ! -f "./havoc-playbooks/${playbook}/${playbook}.ini.sample" ]; then
+            echo "Could not find ${playbook}.ini.sample in havoc-playbooks/${playbook}."
+            exit
+          fi
+          echo "If you have previously configured this playbook, configuring it again will delete the existing configuration."
+          read -p "Are you sure you want to continue? [Y/N]: " user_continue
+          if [[ ! ${user_continue} == y* ]] && [[ ! ${user_continue} == Y* ]]; then
+            echo "Exiting..."
+            exit
+          fi
+          input="./havoc-playbooks/${playbook}/${playbook}.ini.sample"
+          echo "Creating a customized ${playbook}.ini file."
+          echo "Provide a value for each parameter."
+          echo "Press enter without providing a value to accept the default."
+          if [ -f ./havoc-playbooks/${playbook}/${playbook}.ini ]; then
+            rm ./havoc-playbooks/${playbook}/${playbook}.ini
+          fi
+          touch ./havoc-playbooks/${playbook}/${playbook}.ini
+          while read -r line
+          do
+            if [[ ${line} == \[*\] ]]; then
+              echo ""
+              echo "${line}"
+              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+              continue
+            fi
+            if [[ ${line}x == x ]]; then
+              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+              continue
+            fi
+            parameter=$(printf '%s\n' "${line}" | sed -rn 's/^(.*) = .*/\1/p')
+            default_value=$(printf '%s\n' "${line}" | sed -rn 's/^.* = (.*)/\1/p')
+            read -p "${parameter} [${default_value}]: " user_response < /dev/tty
+            if [ ! ${user_response} ]; then
+              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+            else
+              echo "${parameter} = ${user_response}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+            fi
+          done < "${input}"
+          ${pip_bin} install -r "./havoc-playbooks/${playbook}/requirements.txt"
+          playbook_exists=$(cat ~/.havoc/playbooks | sed -n "/^${playbook}/p")
+          if [ ! ${playbook_exists} ]; then
+            echo "${playbook}" >> ~/.havoc/playbooks
+          fi
+          echo "Playbook ${playbook} configured."
           exit
           ;;
         d)
@@ -175,78 +247,6 @@ while getopts "ad:e:np:r:su:" flag; do
             fi
           fi
           ${python3_bin} ./havoc-playbooks/${playbook}/${playbook}.py --profile ${profile}
-          exit
-          ;;
-        n)
-          # Install a new playbook.
-          if [ ! -d ./venv ]; then
-            echo "No virtualenv found. Run ./havoc -d or ./havoc -s first."
-            exit
-          fi
-          python3_bin=./venv/bin/python3
-          pip_bin=./venv/bin/pip3
-          python_pkg=$(${pip_bin} --disable-pip-version-check list)
-          havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
-          if [ ! "${havoc_exists}" ]; then
-            echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
-            exit
-          fi
-          PS3="Select a playbook to install: "
-          array=(havoc-playbooks/*/)
-          select dir in "${array[@]%/}"; do
-            echo "Installing playbook ${dir}."
-            break
-          done
-          playbook=$(printf '%s\n' "${dir}" | sed -rn 's/.*\/(.*)/\1/p')
-          if [ ! -f "./havoc-playbooks/${playbook}/requirements.txt" ]; then
-            echo "Could not find ${playbook} in havoc-playbooks."
-            exit
-          fi
-          if [ ! -f "./havoc-playbooks/${playbook}/${playbook}.ini.sample" ]; then
-            echo "Could not find ${playbook}.ini.sample in havoc-playbooks/${playbook}."
-            exit
-          fi
-          echo "If you have previously installed this playbook, installing it again will delete the existing configuration."
-          read -p "Are you sure you want to continue? [Y/N]: " user_continue
-          if [[ ! ${user_continue} == y* ]] && [[ ! ${user_continue} == Y* ]]; then
-            echo "Exiting..."
-            exit
-          fi
-          input="./havoc-playbooks/${playbook}/${playbook}.ini.sample"
-          echo "Creating a customized ${playbook}.ini file."
-          echo "Provide a value for each parameter."
-          echo "Press enter without providing a value to accept the default."
-          if [ -f ./havoc-playbooks/${playbook}/${playbook}.ini ]; then
-            rm ./havoc-playbooks/${playbook}/${playbook}.ini
-          fi
-          touch ./havoc-playbooks/${playbook}/${playbook}.ini
-          while read -r line
-          do
-            if [[ ${line} == \[*\] ]]; then
-              echo ""
-              echo "${line}"
-              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
-              continue
-            fi
-            if [[ ${line}x == x ]]; then
-              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
-              continue
-            fi
-            parameter=$(printf '%s\n' "${line}" | sed -rn 's/^(.*) = .*/\1/p')
-            default_value=$(printf '%s\n' "${line}" | sed -rn 's/^.* = (.*)/\1/p')
-            read -p "${parameter} [${default_value}]: " user_response < /dev/tty
-            if [ ! ${user_response} ]; then
-              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
-            else
-              echo "${parameter} = ${user_response}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
-            fi
-          done < "${input}"
-          ${pip_bin} install -r "./havoc-playbooks/${playbook}/requirements.txt"
-          playbook_exists=$(cat ~/.havoc/playbooks | sed -n "/^${playbook}/p")
-          if [ ! ${playbook_exists} ]; then
-            echo "${playbook}" >> ~/.havoc/playbooks
-          fi
-          echo "Playbook ${playbook} installed."
           exit
           ;;
         p)
