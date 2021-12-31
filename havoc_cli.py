@@ -94,7 +94,7 @@ class HavocCMD(Cmd):
         return True
 
     def help_exit(self):
-        print('\nExit the application. Shorthand: x q Ctrl-D.\n')
+        print('\nExit the application. Shorthand: Ctrl-D.\n')
 
     def do_list_tasks(self, inp):
         list_tasks_response = h.list_tasks()
