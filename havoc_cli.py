@@ -431,7 +431,7 @@ class HavocCMD(Cmd):
         print('\n--instruct_instance=<string> - (optional) the instruct_instance to retrieve results for')
         print('\n--instruct_command=<string> - (optional) the command to retrieve results for')
 
-    def wait_for_c2(self, inp):
+    def do_wait_for_c2(self, inp):
         args = {'task_name': ''}
         command_args = convert_input(args, inp)
         command_finished = None
