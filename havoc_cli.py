@@ -49,7 +49,7 @@ def convert_input(args, inp):
                 args[arg.group(1)] = arg.group(2).strip()
             if arg.group(1) in args and arg.group(1) == 'instruct_args':
                 args[arg.group(1)] = ast.literal_eval(arg.group(2))
-            if arg.group(1) in args and arg.group(1) == 'portgroups':
+            if arg.group(1) in args and arg.group(1) in ['portgroups', 'capabilities']:
                 args[arg.group(1)] = []
                 for pg in arg.group(2).split(','):
                     args[arg.group(1)].append(pg)
