@@ -365,6 +365,12 @@ class HavocCMD(Cmd):
         args = {'task_name': '', 'task_type': '', 'task_host_name': '', 'task_domain_name': '', 'portgroups': '',
                 'end_time': ''}
         command_args = convert_input(args, inp)
+        if not command_args['task_host_name']:
+            del command_args['task_host_name']
+        if not command_args['task_domain_name']:
+            del command_args['task_domain_name']
+        if not command_args['portgroups']:
+            del command_args['portgroups']
         run_task_response = h.run_task(**command_args)
         format_output('run_task', run_task_response)
 
