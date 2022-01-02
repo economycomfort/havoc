@@ -185,6 +185,8 @@ class HavocCMD(Cmd):
     def do_create_user(self, inp):
         args = {'user_id': '', 'admin': ''}
         command_args = convert_input(args, inp)
+        if not command_args['admin']:
+            del command_args['admin']
         create_user_response = h.create_user(**command_args)
         format_output('create_user', create_user_response)
 
@@ -196,6 +198,12 @@ class HavocCMD(Cmd):
     def do_update_user(self, inp):
         args = {'user_id': '', 'new_user_id': '', 'admin': '', 'reset_keys': ''}
         command_args = convert_input(args, inp)
+        if not command_args['new_user_id']:
+            del command_args['new_user_id']
+        if not command_args['admin']:
+            del command_args['admin']
+        if not command_args['reset_keys']:
+            del command_args['reset_keys']
         update_user_response = h.update_user(**command_args)
         format_output('update_user', update_user_response)
 
@@ -386,6 +394,8 @@ class HavocCMD(Cmd):
     def do_instruct_task(self, inp):
         args = {'task_name': '', 'instruct_instance': '', 'instruct_command': '', 'instruct_args': ''}
         command_args = convert_input(args, inp)
+        if not command_args['instruct_args']:
+            del command_args['instruct_args']
         instruct_task_response = h.instruct_task(**command_args)
         format_output('instruct_task', instruct_task_response)
 
