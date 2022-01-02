@@ -379,6 +379,8 @@ class HavocCMD(Cmd):
             del command_args['task_domain_name']
         if not command_args['portgroups']:
             del command_args['portgroups']
+        if not command_args['end_time']:
+            del command_args['end_time']
         run_task_response = h.run_task(**command_args)
         format_output('run_task', run_task_response)
 
