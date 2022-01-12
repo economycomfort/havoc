@@ -200,7 +200,7 @@ while getopts "acd:e:p:r:su:" flag; do
             ${pip_bin} install -r ./requirements.txt
             echo ""
             echo "The following campaign parameters have been written to your ~/.havoc/config file:"
-            echo "[${deploy-profile}]"
+            echo "[${deploy_profile}]"
             echo "OUTPUT = ${output}"
             echo "API_DOMAIN_NAME = ${api_domain_name}"
             echo "API_KEY = ${api_key}"
