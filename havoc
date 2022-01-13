@@ -135,8 +135,15 @@ while getopts "acd:e:p:r:su:" flag; do
             echo aws_region = \"${aws_region}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS profile: " aws_profile
             echo aws_profile = \"${aws_profile}\" >> havoc-deploy/aws/terraform/terraform.tfvars
-            read -p "./havoc campaign name: " campaign_name
-            echo campaign_name = \"${campaign_name}\" >> havoc-deploy/aws/terraform/terraform.tfvars
+            while [ ! ${campaign_name} ]; do
+              read -p "./havoc campaign name: " campaign_name
+              if [[ ${campaign_name} =~ ^[a-zA-Z0-9\-]{3,32}$ ]]; then
+                echo campaign_name = \"${campaign_name}\" >> havoc-deploy/aws/terraform/terraform.tfvars
+              else
+                echo "campaign name must be DNS compliant (limited to letters, numbers and hyphens), minimum 3 characters and maximum 32 characters."
+                unset campaign_name
+              fi
+            done
             read -p "./havoc campaign administrator email: " campaign_admin_email
             echo campaign_admin_email = \"${campaign_admin_email}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "Task results queue expiration: " results_queue_expiration
