@@ -5,7 +5,6 @@ import re
 import ast
 import json
 import argparse
-import time as t
 from configparser import ConfigParser
 from tabulate import tabulate
 from cmd2 import Cmd
@@ -53,7 +52,11 @@ def convert_input(args, inp):
                 args[arg.group(1)] = []
                 for a in arg.group(2).split(','):
                     args[arg.group(1)].append(a.strip())
-    return args
+    return_args = {}
+    for k,v in args.items():
+        if v:
+            return_args[k] = v
+    return return_args
 
 
 def print_table(command, data):
@@ -185,8 +188,6 @@ class HavocCMD(Cmd):
     def do_create_user(self, inp):
         args = {'user_id': '', 'admin': ''}
         command_args = convert_input(args, inp)
-        if not command_args['admin']:
-            del command_args['admin']
         create_user_response = h.create_user(**command_args)
         format_output('create_user', create_user_response)
 
@@ -198,12 +199,6 @@ class HavocCMD(Cmd):
     def do_update_user(self, inp):
         args = {'user_id': '', 'new_user_id': '', 'admin': '', 'reset_keys': ''}
         command_args = convert_input(args, inp)
-        if not command_args['new_user_id']:
-            del command_args['new_user_id']
-        if not command_args['admin']:
-            del command_args['admin']
-        if not command_args['reset_keys']:
-            del command_args['reset_keys']
         update_user_response = h.update_user(**command_args)
         format_output('update_user', update_user_response)
 
@@ -373,14 +368,6 @@ class HavocCMD(Cmd):
         args = {'task_name': '', 'task_type': '', 'task_host_name': '', 'task_domain_name': '', 'portgroups': '',
                 'end_time': ''}
         command_args = convert_input(args, inp)
-        if not command_args['task_host_name']:
-            del command_args['task_host_name']
-        if not command_args['task_domain_name']:
-            del command_args['task_domain_name']
-        if not command_args['portgroups']:
-            del command_args['portgroups']
-        if not command_args['end_time']:
-            del command_args['end_time']
         run_task_response = h.run_task(**command_args)
         format_output('run_task', run_task_response)
 
@@ -393,59 +380,76 @@ class HavocCMD(Cmd):
         print('\n--portgroups=<string> - (optional) a comma separated list of portgroups to associate with the task')
         print('\n--end_time=<string> - (optional) terminate the task at the given time')
 
+    def do_task_startup(self, inp):
+        args = {'task_name': '', 'task_type': '', 'task_host_name': '', 'task_domain_name': '', 'portgroups': '',
+                'end_time': ''}
+        command_args = convert_input(args, inp)
+        task_startup_response = h.task_startup(**command_args)
+        format_output('task_startup', task_startup_response)
+
+    def help_task_startup(self):
+        print('\nRun a ./havoc Attack Container as an ECS task and wait for task to be ready.')
+        print('\n--task_name=<string> - (required) a unique identifier to associate with the task')
+        print('\n--task_type=<string> - (required) the type of Attack Container to be executed')
+        print('\n--task_host_name=<string> - (optional) a host name to associate with the task')
+        print('\n--task_domain_name=<string> - (optional) a domain name to associate with the task')
+        print('\n--portgroups=<string> - (optional) a comma separated list of portgroups to associate with the task')
+        print('\n--end_time=<string> - (optional) terminate the task at the given time')
+
+    def do_task_shutdown(self, inp):
+        args = {'task_name': ''}
+        command_args = convert_input(args, inp)
+        task_shutdown_response = h.task_shutdown(**command_args)
+        format_output('task_shutdown', task_shutdown_response)
+
+    def help_task_shutdown(self):
+        print('\nCleanly shutdown a ./havoc Container.')
+        print('\n--task_name=<string> - (required) a unique identifier to associate with the task')
+
     def do_instruct_task(self, inp):
         args = {'task_name': '', 'instruct_instance': '', 'instruct_command': '', 'instruct_args': ''}
         command_args = convert_input(args, inp)
-        if not command_args['instruct_args']:
-            del command_args['instruct_args']
         instruct_task_response = h.instruct_task(**command_args)
         format_output('instruct_task', instruct_task_response)
 
     def help_instruct_task(self):
-        print('\nInteract with a running task.')
+        print('\nSend instructions to a running task.')
         print('\n--task_name=<string> - (required) the name of the task you want to instruct')
-        print('\n--instruct_instance=<string> - (required) a unique string to associate with the instruction (defaults '
-              'to \'havoc\')')
+        print('\n--instruct_instance=<string> - (required) a unique string to associate with the instruction')
+        print('\n--instruct_command=<string> - (required) the command to send to the task')
+        print('\n--instruct_args=<dict> - (optional) a dictionary of arguments to pass with the command')
+
+    def do_interact_with_task(self, inp):
+        args = {'task_name': '', 'instruct_instance': '', 'instruct_command': '', 'instruct_args': ''}
+        command_args = convert_input(args, inp)
+        interact_with_task_response = h.interact_with_task(**command_args)
+        format_output('interact_with_task', interact_with_task_response)
+
+    def help_interact_with_task(self):
+        print('\nInteract with a running task and wait for instruction results.')
+        print('\n--task_name=<string> - (required) the name of the task you want to instruct')
+        print('\n--instruct_instance=<string> - (required) a unique string to associate with the instruction')
         print('\n--instruct_command=<string> - (required) the command to send to the task')
         print('\n--instruct_args=<dict> - (optional) a dictionary of arguments to pass with the command')
 
     def do_get_task_results(self, inp):
-        args = {'task_name': '', 'instruct_command': '', 'instruct_instance': ''}
+        args = {'task_name': ''}
         command_args = convert_input(args, inp)
-        instruct_command, instruct_instance = None, None
-        if command_args['instruct_command']:
-            instruct_command = command_args['instruct_command']
-        del command_args['instruct_command']
-        if command_args['instruct_instance']:
-            instruct_instance = command_args['instruct_instance']
-        del command_args['instruct_instance']
         get_task_results_response = h.get_task_results(**command_args)
-        if 'queue' not in get_task_results_response:
-            format_output('get_task_results', get_task_results_response)
-        else:
-            filtered_results = []
-            if not instruct_command and not instruct_instance:
-                for result in get_task_results_response['queue']:
-                    filtered_results.append(result)
-            if instruct_command and not instruct_instance:
-                for result in get_task_results_response['queue']:
-                    if result['instruct_command'] == instruct_command:
-                        filtered_results.append(result)
-            if instruct_instance and not instruct_command:
-                for result in get_task_results_response['queue']:
-                    if result['instruct_instance'] == instruct_instance:
-                        filtered_results.append(result)
-            if instruct_command and instruct_instance:
-                for result in get_task_results_response['queue']:
-                    if result['instruct_command'] == instruct_command and result[
-                        'instruct_instance'] == instruct_instance:
-                        filtered_results.append(result)
-            del get_task_results_response['queue']
-            get_task_results_response['queue'] = filtered_results
-            format_output('get_task_results', get_task_results_response)
+        format_output('get_task_results', get_task_results_response)
 
     def help_get_task_results(self):
-        print('\nGet results of an instruct_command.')
+        print('\nGet all instruct_command results for a given task.')
+        print('\n--task_name=<string> - (required) the name of the task to retrieve results from')
+
+    def do_get_filtered_task_results(self, inp):
+        args = {'task_name': '', 'instruct_command': '', 'instruct_instance': ''}
+        command_args = convert_input(args, inp)
+        get_filtered_task_results_response = h.get_filtered_task_results(**command_args)
+        format_output('get_filtered_task_results', get_filtered_task_results_response)
+
+    def help_get_filtered_task_results(self):
+        print('\nGet results for a given task filtered by instruct_command and/or instruct_instance.')
         print('\n--task_name=<string> - (required) the name of the task to retrieve results from')
         print('\n--instruct_instance=<string> - (optional) the instruct_instance to retrieve results for')
         print('\n--instruct_command=<string> - (optional) the command to retrieve results for')
@@ -453,27 +457,16 @@ class HavocCMD(Cmd):
     def do_wait_for_c2(self, inp):
         args = {'task_name': ''}
         command_args = convert_input(args, inp)
-        command_finished = None
         try:
-            while not command_finished:
-                command_results = h.get_task_results(**command_args)
-                for entry in command_results['queue']:
-                    instruct_command = entry['instruct_command']
-                    if instruct_command == 'agent_status_monitor' or instruct_command == 'session_status_monitor':
-                        command_finished = True
-                        format_output('wait_for_c2', entry)
-                if not command_finished:
-                    t.sleep(5)
+            wait_for_c2_response = h.wait_for_c2(**command_args)
+            format_output('wait_for_c2', wait_for_c2_response)
         except KeyboardInterrupt:
             print('wait_for_c2 stopped.')
 
     def help_wait_for_c2(self):
         print('\nWait for a task to receive a C2 agent or session connection.')
         print('\n--task_name=<string> - (required) the name of the task that the C2 agent or session will to connect to')
-
-    def default(self, inp):
-        if inp == 'x' or inp == 'q':
-            return self.do_exit('x')
+        print('Note - press Ctrl-C to cancel the wait_for_c2 operation.')
 
     do_EOF = do_exit
     help_EOF = help_exit
