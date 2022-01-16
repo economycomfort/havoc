@@ -127,6 +127,20 @@ class HavocCMD(Cmd):
         print('\nForce quit a running task.')
         print('\n--task_name=<string> - (required) the name of the task to kill')
 
+    def do_verify_task(self, inp):
+        args = {'task_name': '', 'task_type' ''}
+        command_args = convert_input(args, inp)
+        verify_task_response = h.verify_task(**command_args)
+        if verify_task_response:
+            format_output('verify_task', verify_task_response)
+        else:
+            format_output('verify_task', {command_args['task_name']: 'task not found'})
+
+    def help_verify_task(self):
+        print('\nCheck for the existence of a task with the given task_name and task_type')
+        print('\n--task_name=<string> - (required) the name of the task to verify')
+        print('\n--task_type=<string> - (required) the type of task that the verified task should be')
+
     def do_list_task_types(self, inp):
         list_task_types_response = h.list_task_types()
         format_output('list_task_types', list_task_types_response)
