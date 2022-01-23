@@ -160,7 +160,7 @@ while getopts "acd:e:p:r:su:" flag; do
             fi
             echo "Starting terraform tasks..."
             terraform -chdir=havoc-deploy/aws/terraform init
-            tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply -no-color --auto-approve 2>&1) || echo ${tf_out} 1>&2
+            tf_out=$(terraform -chdir=havoc-deploy/aws/terraform apply --auto-approve 2>&1) || echo ${tf_out} 1>&2
             if [[ ${tf_out} == *Error:* ]]; then
               echo ""
               echo "Terraform deployment encountered errors, rolling back changes..."
@@ -312,7 +312,12 @@ while getopts "acd:e:p:r:su:" flag; do
             read -p "Are you sure you want to destroy your ./havoc deployment? (Y/N) [N]: " destroy
             if [[ ${destroy} == y* ]] || [[ ${destroy} == Y* ]]; then
               echo "Destroying ./havoc campaign"
-              terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve
+              tf_out=$(terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve 2>&1) || echo ${tf_out} 1>&2
+              if [[ ${tf_out} == *Error:* ]]; then
+                echo ""
+                echo "Terraform encountered errors while destroying deployment. Clean up reported conflicts and run ./havoc -r <provider> again. Exiting..."
+                exit
+              fi
               rm havoc-deploy/aws/terraform/terraform.tfvars
               rm havoc-deploy/aws/terraform/terraform.tfstate
               echo "Done."
