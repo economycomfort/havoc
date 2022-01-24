@@ -482,6 +482,10 @@ class HavocCMD(Cmd):
         print('\n--task_name=<string> - (required) the name of the task that the C2 agent or session will to connect to')
         print('Note - press Ctrl-C to cancel the wait_for_c2 operation.')
 
+    def default(self, inp):
+        if inp == 'x' or inp == 'q':
+            return self.do_exit(inp)
+
     do_EOF = do_exit
     help_EOF = help_exit
 
