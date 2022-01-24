@@ -128,7 +128,7 @@ class HavocCMD(Cmd):
         print('\n--task_name=<string> - (required) the name of the task to kill')
 
     def do_verify_task(self, inp):
-        args = {'task_name': '', 'task_type' ''}
+        args = {'task_name': '', 'task_type': ''}
         command_args = convert_input(args, inp)
         verify_task_response = h.verify_task(**command_args)
         if verify_task_response:
