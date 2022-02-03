@@ -482,6 +482,20 @@ class HavocCMD(Cmd):
         print('\n--task_name=<string> - (required) the name of the task that the C2 agent or session will to connect to')
         print('Note - press Ctrl-C to cancel the wait_for_c2 operation.')
 
+    def do_wait_for_idle_task(self, inp):
+        args = {'task_name': ''}
+        command_args = convert_input(args, inp)
+        try:
+            wait_for_idle_task_response = h.wait_for_idle_task(**command_args)
+            format_output('wait_for_idle_task', wait_for_idle_task_response)
+        except KeyboardInterrupt:
+            print('wait_for_idle_task stopped.')
+
+    def help_wait_for_idle_task(self):
+        print('\nWait for a task to become idle.')
+        print('\n--task_name=<string> - (required) the name of the task to wait on')
+        print('Note - press Ctrl-C to cancel the wait_for_idle_task operation.')
+
     def default(self, inp):
         if inp == 'x' or inp == 'q':
             return self.do_exit(inp)
