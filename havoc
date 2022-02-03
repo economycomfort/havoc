@@ -49,10 +49,10 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
             exit
           fi
-          PS3="Select a playbook to install: "
+          PS3="Select a playbook to configure: "
           array=(havoc-playbooks/*/)
           select dir in "${array[@]%/}"; do
-            echo "Installing playbook ${dir}."
+            echo "Configuring playbook ${dir}."
             break
           done
           playbook=$(printf '%s\n' "${dir}" | sed -rn 's/.*\/(.*)/\1/p')
