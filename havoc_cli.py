@@ -434,7 +434,7 @@ class HavocCMD(Cmd):
         print('\n--instruct_args=<dict> - (optional) a dictionary of arguments to pass with the command')
 
     def do_interact_with_task(self, inp):
-        args = {'task_name': '', 'instruct_command': '', 'instruct_args': ''}
+        args = {'task_name': '', 'instruct_command': '', 'instruct_instance': '', 'instruct_args': ''}
         command_args = convert_input(args, inp)
         interact_with_task_response = h.interact_with_task(**command_args)
         format_output('interact_with_task', interact_with_task_response)
@@ -443,6 +443,7 @@ class HavocCMD(Cmd):
         print('\nInteract with a running task and wait for instruction results.')
         print('\n--task_name=<string> - (required) the name of the task you want to instruct')
         print('\n--instruct_command=<string> - (required) the command to send to the task')
+        print('\n--instruct_instance=<string> - (optional) a unique string to associate with the interaction')
         print('\n--instruct_args=<dict> - (optional) a dictionary of arguments to pass with the command')
 
     def do_get_task_results(self, inp):
