@@ -8,6 +8,7 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "Could not find a local config file. Run ./havoc -d or ./havoc -s."
             exit
           fi
+          echo ""
           echo "Creating a new credential profile..."
           while [ ! ${deploy_profile} ]; do
             read -p "./havoc credential profile name [default]: " deploy_profile
@@ -49,13 +50,15 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
             exit
           fi
+          echo ""
           PS3="Select a playbook to configure: "
-          array=(havoc-playbooks/*/)
-          select dir in "${array[@]%/}"; do
-            echo "Configuring playbook ${dir}."
+          cd havoc-playbooks
+          array=(*/)
+          select playbook in "${array[@]%/}"; do
+            echo "Configuring playbook ${playbook}."
             break
           done
-          playbook=$(printf '%s\n' "${dir}" | sed -rn 's/.*\/(.*)/\1/p')
+          cd ..
           if [ ! -f "./havoc-playbooks/${playbook}/requirements.txt" ]; then
             echo "Could not find ${playbook} in havoc-playbooks."
             exit
@@ -64,12 +67,14 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "Could not find ${playbook}.ini.sample in havoc-playbooks/${playbook}."
             exit
           fi
+          echo ""
           echo "If you have previously configured this playbook, configuring it again will delete the existing configuration."
           read -p "Are you sure you want to continue? [Y/N]: " user_continue
           if [[ ! ${user_continue} == y* ]] && [[ ! ${user_continue} == Y* ]]; then
             echo "Exiting..."
             exit
           fi
+          echo ""
           echo "Creating a customized ${playbook}.ini file."
           echo "Provide a value for each parameter."
           echo "Press enter without providing a value to accept the default."
@@ -126,6 +131,7 @@ while getopts "acd:e:p:r:su:" flag; do
             exit
           fi
           if [ ${deploy} == aws ]; then
+            echo ""
             echo "Deploying a new ./havoc campaign..."
             ${python3_bin} -m venv venv
             python3_bin=./venv/bin/python3
@@ -334,6 +340,7 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
             exit
           fi
+          echo ""
           echo "Setting up local environment..."
           ${python3_bin} -m venv venv
           python3_bin=./venv/bin/python3
@@ -390,6 +397,7 @@ while getopts "acd:e:p:r:su:" flag; do
           pip_bin=./venv/bin/pip3
           deploy=${OPTARG}
           if [ ${deploy} == aws ]; then
+            echo ""
             echo "Getting updates..."
             git pull origin main --recurse-submodules --force
             if [ -f havoc-deploy/aws/terraform/terraform.tfstate ]; then
