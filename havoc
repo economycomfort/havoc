@@ -8,6 +8,7 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "Could not find a local config file. Run ./havoc -d or ./havoc -s."
             exit
           fi
+          echo ""
           echo "Creating a new credential profile..."
           while [ ! ${deploy_profile} ]; do
             read -p "./havoc credential profile name [default]: " deploy_profile
@@ -49,13 +50,15 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
             exit
           fi
-          PS3="Select a playbook to install: "
-          array=(havoc-playbooks/*/)
-          select dir in "${array[@]%/}"; do
-            echo "Installing playbook ${dir}."
+          echo ""
+          PS3="Select a playbook to configure: "
+          cd havoc-playbooks
+          array=(*/)
+          select playbook in "${array[@]%/}"; do
+            echo "Configuring playbook ${playbook}."
             break
           done
-          playbook=$(printf '%s\n' "${dir}" | sed -rn 's/.*\/(.*)/\1/p')
+          cd ..
           if [ ! -f "./havoc-playbooks/${playbook}/requirements.txt" ]; then
             echo "Could not find ${playbook} in havoc-playbooks."
             exit
@@ -64,12 +67,14 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "Could not find ${playbook}.ini.sample in havoc-playbooks/${playbook}."
             exit
           fi
+          echo ""
           echo "If you have previously configured this playbook, configuring it again will delete the existing configuration."
           read -p "Are you sure you want to continue? [Y/N]: " user_continue
           if [[ ! ${user_continue} == y* ]] && [[ ! ${user_continue} == Y* ]]; then
             echo "Exiting..."
             exit
           fi
+          echo ""
           echo "Creating a customized ${playbook}.ini file."
           echo "Provide a value for each parameter."
           echo "Press enter without providing a value to accept the default."
@@ -92,7 +97,7 @@ while getopts "acd:e:p:r:su:" flag; do
               echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
               continue
             fi
-            parameter=$(printf '%s\n' "${line}" | sed -rn 's/^(.*) = .*/\1/p')
+            parameter=$(printf '%s\n' "${line}" | sed -rn 's/^(.*) =.*/\1/p')
             default_value=$(printf '%s\n' "${line}" | sed -rn 's/^.* = (.*)/\1/p')
             read -p "${parameter} [${default_value}]: " user_response < /dev/tty
             if [ ! ${user_response} ]; then
@@ -126,6 +131,7 @@ while getopts "acd:e:p:r:su:" flag; do
             exit
           fi
           if [ ${deploy} == aws ]; then
+            echo ""
             echo "Deploying a new ./havoc campaign..."
             ${python3_bin} -m venv venv
             python3_bin=./venv/bin/python3
@@ -135,8 +141,15 @@ while getopts "acd:e:p:r:su:" flag; do
             echo aws_region = \"${aws_region}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "AWS profile: " aws_profile
             echo aws_profile = \"${aws_profile}\" >> havoc-deploy/aws/terraform/terraform.tfvars
-            read -p "./havoc campaign name: " campaign_name
-            echo campaign_name = \"${campaign_name}\" >> havoc-deploy/aws/terraform/terraform.tfvars
+            while [ ! ${campaign_name} ]; do
+              read -p "./havoc campaign name: " campaign_name
+              if [[ ${campaign_name} =~ ^[a-zA-Z0-9\-]{3,32}$ ]]; then
+                echo campaign_name = \"${campaign_name}\" >> havoc-deploy/aws/terraform/terraform.tfvars
+              else
+                echo "campaign name must be DNS compliant (limited to letters, numbers and hyphens), minimum 3 characters and maximum 32 characters."
+                unset campaign_name
+              fi
+            done
             read -p "./havoc campaign administrator email: " campaign_admin_email
             echo campaign_admin_email = \"${campaign_admin_email}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "Task results queue expiration: " results_queue_expiration
@@ -160,6 +173,15 @@ while getopts "acd:e:p:r:su:" flag; do
               terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve
               rm havoc-deploy/aws/terraform/terraform.tfvars
               rm havoc-deploy/aws/terraform/terraform.tfstate
+              echo ""
+              echo "Rollback completed. Exiting..."
+              exit
+            fi
+            if [ ! -f "./havoc-deploy/aws/terraform/terraform.tfstate" ]; then
+              echo ""
+              echo "Terraform deployment encountered errors, rolling back changes..."
+              terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve
+              rm havoc-deploy/aws/terraform/terraform.tfvars
               echo ""
               echo "Rollback completed. Exiting..."
               exit
@@ -191,16 +213,16 @@ while getopts "acd:e:p:r:su:" flag; do
               output=table
             fi
             echo OUTPUT = ${output} >> ~/.havoc/config
-            api_domain_name=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_DOMAIN_NAME = "(.*)"/\1/p') && printf '%s\n' "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config
-            api_key=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_KEY = "(.*)"/\1/p') && printf '%s\n' "API_KEY = ${api_key}" >> ~/.havoc/config
-            secret=$(printf '%s\n' "${tf_out}" | sed -rn 's/^SECRET = "(.*)"/\1/p') && printf '%s\n' "SECRET = ${secret}" >> ~/.havoc/config
-            api_region=$(printf '%s\n' "${tf_out}" | sed -rn 's/^API_REGION = "(.*)"/\1/p') && printf '%s\n' "API_REGION = ${api_region}" >> ~/.havoc/config
-            campaign_admin_email=$(printf '%s\n' "${tf_out}" | sed -rn 's/^CAMPAIGN_ADMIN_EMAIL = "(.*)"/\1/p') && printf '%s\n' "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}" >> ~/.havoc/config
-            campaign_id=$(printf '%s\n' "${tf_out}" | sed -rn 's/^CAMPAIGN_ID = "(.*)"/\1/p') && printf '%s\n' "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
+            api_domain_name=$(sed -rn '/"API_DOMAIN_NAME": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "API_DOMAIN_NAME = ${api_domain_name}" >> ~/.havoc/config
+            api_key=$(sed -rn '/"API_KEY": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "API_KEY = ${api_key}" >> ~/.havoc/config
+            secret=$(sed -rn '/"SECRET": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "SECRET = ${secret}" >> ~/.havoc/config
+            api_region=$(sed -rn '/"API_REGION": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "API_REGION = ${api_region}" >> ~/.havoc/config
+            campaign_admin_email=$(sed -rn '/"CAMPAIGN_ADMIN_EMAIL": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}" >> ~/.havoc/config
+            campaign_id=$(sed -rn '/"CAMPAIGN_ID": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
             ${pip_bin} install -r ./requirements.txt
             echo ""
             echo "The following campaign parameters have been written to your ~/.havoc/config file:"
-            echo "[${deploy-profile}]"
+            echo "[${deploy_profile}]"
             echo "OUTPUT = ${output}"
             echo "API_DOMAIN_NAME = ${api_domain_name}"
             echo "API_KEY = ${api_key}"
@@ -296,7 +318,12 @@ while getopts "acd:e:p:r:su:" flag; do
             read -p "Are you sure you want to destroy your ./havoc deployment? (Y/N) [N]: " destroy
             if [[ ${destroy} == y* ]] || [[ ${destroy} == Y* ]]; then
               echo "Destroying ./havoc campaign"
-              terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve
+              tf_out=$(terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve 2>&1) || echo ${tf_out} 1>&2
+              if [[ ${tf_out} == *Error:* ]]; then
+                echo ""
+                echo "Terraform encountered errors while destroying deployment. Clean up reported conflicts and run ./havoc -r <provider> again. Exiting..."
+                exit
+              fi
               rm havoc-deploy/aws/terraform/terraform.tfvars
               rm havoc-deploy/aws/terraform/terraform.tfstate
               echo "Done."
@@ -313,6 +340,7 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "Could not find python3 in your path. Please install python3 and/or add it to your path before continuing."
             exit
           fi
+          echo ""
           echo "Setting up local environment..."
           ${python3_bin} -m venv venv
           python3_bin=./venv/bin/python3
@@ -369,6 +397,7 @@ while getopts "acd:e:p:r:su:" flag; do
           pip_bin=./venv/bin/pip3
           deploy=${OPTARG}
           if [ ${deploy} == aws ]; then
+            echo ""
             echo "Getting updates..."
             git pull origin main --recurse-submodules --force
             if [ -f havoc-deploy/aws/terraform/terraform.tfstate ]; then
