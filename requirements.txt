@@ -1,4 +1,3 @@
 cmd2
 tabulate
-gnureadline
 havoc
