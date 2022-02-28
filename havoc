@@ -219,6 +219,7 @@ while getopts "acd:e:p:r:su:" flag; do
             api_region=$(sed -rn '/"API_REGION": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "API_REGION = ${api_region}" >> ~/.havoc/config
             campaign_admin_email=$(sed -rn '/"CAMPAIGN_ADMIN_EMAIL": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "CAMPAIGN_ADMIN_EMAIL = ${campaign_admin_email}" >> ~/.havoc/config
             campaign_id=$(sed -rn '/"CAMPAIGN_ID": \{/{n;p;}' havoc-deploy/aws/terraform/terraform.tfstate | sed -rn 's/"value": "(.*)",$/\1/p' | awk '{$1=$1;print}') && printf '%s\n' "CAMPAIGN_ID = ${campaign_id}" >> ~/.havoc/config
+            ${pip_bin} install wheel
             ${pip_bin} install -r ./requirements.txt
             echo ""
             echo "The following campaign parameters have been written to your ~/.havoc/config file:"
@@ -345,6 +346,7 @@ while getopts "acd:e:p:r:su:" flag; do
           ${python3_bin} -m venv venv
           python3_bin=./venv/bin/python3
           pip_bin=./venv/bin/pip3
+          ${pip_bin} install wheel
           ${pip_bin} install -r ./requirements.txt
           for d in ./havoc-playbooks/*/ ; do
             ${pip_bin} install -r "${d}/requirements.txt"
