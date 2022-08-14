@@ -11,7 +11,7 @@ while getopts "acd:e:p:r:su:" flag; do
           echo ""
           echo "Creating a new credential profile..."
           while [ ! ${deploy_profile} ]; do
-            read -p "./havoc credential profile name [default]: " deploy_profile
+            read -p "./HAVOC credential profile name [default]: " deploy_profile
             if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
             fi
@@ -132,7 +132,17 @@ while getopts "acd:e:p:r:su:" flag; do
           fi
           if [ ${deploy} == aws ]; then
             echo ""
-            echo "Deploying a new ./havoc campaign..."
+            echo "Checking for an existing campaign deployment..."
+            if [ -f havoc-deploy/aws/terraform/terraform.tfvars ]; then
+              echo ""
+              echo "Existing deployment found."
+              echo "If you intend to re-deploy this ./HAVOC campaign, remove the existing deployment first by running ./havoc -r <provider>."
+              echo "If you would like to deploy another campaign without destroying this one,"
+              echo "clone the https://github.com/havocsh/havoc.git repo to a different directory and deploy from there."
+              echo "Exiting..."
+              exit
+            fi
+            echo "Deploying a new ./HAVOC campaign..."
             ${python3_bin} -m venv venv
             python3_bin=./venv/bin/python3
             pip_bin=./venv/bin/pip3
@@ -142,7 +152,7 @@ while getopts "acd:e:p:r:su:" flag; do
             read -p "AWS profile: " aws_profile
             echo aws_profile = \"${aws_profile}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             while [ ! ${campaign_name} ]; do
-              read -p "./havoc campaign name: " campaign_name
+              read -p "./HAVOC campaign name: " campaign_name
               if [[ ${campaign_name} =~ ^[a-zA-Z0-9\-]{3,32}$ ]]; then
                 echo campaign_name = \"${campaign_name}\" >> havoc-deploy/aws/terraform/terraform.tfvars
               else
@@ -150,7 +160,7 @@ while getopts "acd:e:p:r:su:" flag; do
                 unset campaign_name
               fi
             done
-            read -p "./havoc campaign administrator email: " campaign_admin_email
+            read -p "./HAVOC campaign administrator email: " campaign_admin_email
             echo campaign_admin_email = \"${campaign_admin_email}\" >> havoc-deploy/aws/terraform/terraform.tfvars
             read -p "Task results queue expiration: " results_queue_expiration
             echo results_queue_expiration = ${results_queue_expiration} >> havoc-deploy/aws/terraform/terraform.tfvars
@@ -197,7 +207,7 @@ while getopts "acd:e:p:r:su:" flag; do
               touch ~/.havoc/playbooks
             fi
             while [ ! ${deploy_profile} ]; do
-              read -p "./havoc credential profile name [default]: " deploy_profile
+              read -p "./HAVOC credential profile name [default]: " deploy_profile
               if [ ! "${deploy_profile}" ]; then
                 deploy_profile=default
               fi
@@ -306,31 +316,45 @@ while getopts "acd:e:p:r:su:" flag; do
             echo "Could not find terraform in your path. Please install terraform and/or add it to your path before continuing."
             exit
           fi
-          if [ ! -f havoc-deploy/aws/terraform/terraform.tfvars ]; then
-            echo "Could not find an existing campaign to destroy. Exiting..."
-            exit
+          if [ -f havoc-deploy/aws/terraform/terraform.tfvars ]; then
+            tf_vars=true
+          else
+            tf_vars=false
           fi
           if [ ! -f havoc-deploy/aws/terraform/terraform.tfstate ]; then
+            tf_state=true
+          else
+            tf_state=false
+          fi
+          if [ "${tf_vars}" != true ] && [ "${tf_state}" != true ]; then
             echo "Could not find an existing campaign to destroy. Exiting..."
             exit
           fi
           deploy=${OPTARG}
           if [ ${deploy} == aws ]; then
-            read -p "Are you sure you want to destroy your ./havoc deployment? (Y/N) [N]: " destroy
+            read -p "Are you sure you want to destroy your ./HAVOC campaign deployment? (Y/N) [N]: " destroy
             if [[ ${destroy} == y* ]] || [[ ${destroy} == Y* ]]; then
-              echo "Destroying ./havoc campaign"
-              tf_out=$(terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve 2>&1) || echo ${tf_out} 1>&2
-              if [[ ${tf_out} == *Error:* ]]; then
-                echo ""
-                echo "Terraform encountered errors while destroying deployment. Clean up reported conflicts and run ./havoc -r <provider> again. Exiting..."
-                exit
+              echo "Destroying ./HAVOC campaign"
+              if [ "${tf_state}" == true ]; then
+                tf_out=$(terraform -chdir=havoc-deploy/aws/terraform destroy --auto-approve 2>&1) || echo ${tf_out} 1>&2
+                if [[ ${tf_out} == *Error:* ]]; then
+                  echo ""
+                  echo "Terraform encountered errors while destroying deployment. Clean up reported conflicts and run ./havoc -r <provider> again. Exiting..."
+                  exit
+                fi
+                rm havoc-deploy/aws/terraform/terraform.tfvars
+                rm havoc-deploy/aws/terraform/terraform.tfstate
+                echo "Done."
               fi
-              rm havoc-deploy/aws/terraform/terraform.tfvars
-              rm havoc-deploy/aws/terraform/terraform.tfstate
-              echo "Done."
+              if [ "${tf_vars}" == true ] && [ "${tf_state}" != true ]; then
+                echo ""
+                echo "Incomplete ./HAVOC campaign deployment found. Cleaning it up..."
+                rm havoc-deploy/aws/terraform/terraform.tfvars
+                echo "Done."
+              fi
             fi
           else
-            echo "Only aws deployment types are currently supported"
+            echo "Only aws deployment types are currently supported."
           fi
           exit
           ;;
@@ -351,7 +375,7 @@ while getopts "acd:e:p:r:su:" flag; do
           for d in ./havoc-playbooks/*/ ; do
             ${pip_bin} install -r "${d}/requirements.txt"
           done
-          echo "Adding ./havoc config..."
+          echo "Adding ./HAVOC config..."
           if [ ! -d ~/.havoc ]; then
             mkdir ~/.havoc
           fi
@@ -359,7 +383,7 @@ while getopts "acd:e:p:r:su:" flag; do
             touch ~/.havoc/config
           fi
           while [ ! ${deploy_profile} ]; do
-            read -p "./havoc credential profile name [default]: " deploy_profile
+            read -p "./HAVOC credential profile name [default]: " deploy_profile
             if [ ! "${deploy_profile}" ]; then
               deploy_profile=default
             fi
