@@ -495,7 +495,68 @@ class HavocCMD(Cmd):
         print('\nWait for a task to become idle.')
         print('\n--task_name=<string> - (required) the name of the task to wait on')
         print('Note - press Ctrl-C to cancel the wait_for_idle_task operation.')
+    
+    def do_verify_agent(self, inp):
+        args = {'task_name': '', 'agent_name': ''}
+        command_args = convert_input(args, inp)
+        verify_agent_response = h.verify_agent(**command_args)
+        if verify_agent_response:
+            format_output('verify_agent', verify_agent_response)
+        else:
+            format_output('verify_agent', {command_args['agent_name']: 'agent not found'})
+    
+    def help_verify_agent(self):
+        print('\nVerify the existence of a C2 agent.')
+        print('\n--task_name=<string> - (required) the name of the task to check for an agent.')
+        print('\n--agent_name=<string> - (required) the name of the agent to check for.')
+    
+    def do_execute_agent_shell_command(self, inp):
+        args = {'task_name': '', 'agent_name': '', 'command': '', 'wait_for_results': '', 'completion_string': ''}
+        command_args = convert_input(args, inp)
+        try:
+            execute_agent_shell_command_response = h.execute_agent_shell_command(**command_args)
+            format_output('execute_agent_shell_command', execute_agent_shell_command_response)
+        except KeyboardInterrupt:
+            print('execute_agent_shell_command stopped.')
+    
+    def help_execute_agent_shell_command(self):
+        print('\nExecute a shell command on a C2 agent.')
+        print('\n--task_name=<string> - (required) the name of the task hosting the agent to execute a command on.')
+        print('\n--agent_name=<string> - (required) the name of the agent that should execute the command.')
+        print('\n--command=<string> - (required) the command to execute.')
+        print('\n--wait_for_results=<boolean> - (optional) indicate whether to wait for the command results. Defaults to True. If set to False, a task ID is returned instead of the shell command results.')
+        print('\n--completion_string=<string> - (optional) a string that should be present in the results to indicate the command is done. If not specified results are returned are soon as any results data becomes available, which may lead to incomplete results being returned.')
 
+    def do_execute_agent_module(self, inp):
+        args = {'task_name': '', 'agent_name': '', 'module': '', 'module_args': '', 'wait_for_results': '', 'completion_string': ''}
+        command_args = convert_input(args, inp)
+        try:
+            execute_agent_module_response = h.execute_agent_module(**command_args)
+            format_output('execute_agent_module', execute_agent_module_response)
+        except KeyboardInterrupt:
+            print('execute_agent_module stopped.')
+    
+    def help_execute_agent_module(self):
+        print('\nExecute a module on a C2 agent.')
+        print('\n--task_name=<string> - (required) the name of the task hosting the agent to execute a module on.')
+        print('\n--agent_name=<string> - (required) the name of the agent that should execute the module.')
+        print('\n--module=<string> - (required) the agent module to execute.')
+        print('\n--module_args=<dict> - (optional) a dictionary of arguments to pass to the module.')
+        print('\n--wait_for_results=<boolean> - (optional) indicate whether to wait for the module results. Defaults to True. If set to False, a task ID is returned instead of the module results.')
+        print('\n--completion_string=<string> - (optional) a string that should be present in the results to indicate the module is done. If not specified results are returned are soon as any results data becomes available, which may lead to incomplete results being returned.')
+
+    def do_get_agent_results(self, inp):
+        args = {'task_name': '', 'agent_name': '', 'task_id': ''}
+        command_args = convert_input(args, inp)
+        get_agent_results_response = h.get_agent_results(**command_args)
+        format_output('get_agent_results', get_agent_results_response)
+    
+    def help_get_agent_results(self):
+        print('\nGet the results of an executed agent shell command or module.')
+        print('\n--task_name=<string> - (required) the name of the task hosting the agent to get results from.')
+        print('\n--agent_name=<string> - (required) the name of the agent to get shell command or module results from.')
+        print('\n--task_id=<string> - (optional) the task ID assigned to the shell command or module to get results from. If not specified, all available shell command and module results are returned.')
+    
     def default(self, inp):
         if inp == 'x' or inp == 'q':
             return self.do_exit(inp)
