@@ -525,7 +525,7 @@ class HavocCMD(Cmd):
         print('\n--agent_name=<string> - (required) the name of the agent that should execute the command.')
         print('\n--command=<string> - (required) the command to execute.')
         print('\n--wait_for_results=<boolean> - (optional) indicate whether to wait for the command results. Defaults to True. If set to False, a task ID is returned instead of the shell command results.')
-        print('\n--completion_string=<string> - (optional) a string that should be present in the results to indicate the command is done. If not specified results are returned are soon as any results data becomes available, which may lead to incomplete results being returned.')
+        print('\n--completion_string=<string> - (optional) a string that should be present in the results to indicate the command is done. If not specified results are returned as soon as any results data becomes available, which may lead to incomplete results being returned.')
 
     def do_execute_agent_module(self, inp):
         args = {'task_name': '', 'agent_name': '', 'module': '', 'module_args': '', 'wait_for_results': '', 'completion_string': ''}
@@ -543,7 +543,7 @@ class HavocCMD(Cmd):
         print('\n--module=<string> - (required) the agent module to execute.')
         print('\n--module_args=<dict> - (optional) a dictionary of arguments to pass to the module.')
         print('\n--wait_for_results=<boolean> - (optional) indicate whether to wait for the module results. Defaults to True. If set to False, a task ID is returned instead of the module results.')
-        print('\n--completion_string=<string> - (optional) a string that should be present in the results to indicate the module is done. If not specified results are returned are soon as any results data becomes available, which may lead to incomplete results being returned.')
+        print('\n--completion_string=<string> - (optional) a string that should be present in the results to indicate the module is done. If not specified results are returned as soon as any results data becomes available, which may lead to incomplete results being returned.')
 
     def do_get_agent_results(self, inp):
         args = {'task_name': '', 'agent_name': '', 'task_id': ''}
