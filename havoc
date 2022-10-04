@@ -321,7 +321,7 @@ while getopts "acd:e:p:r:su:" flag; do
           else
             tf_vars=false
           fi
-          if [ ! -f havoc-deploy/aws/terraform/terraform.tfstate ]; then
+          if [ -f havoc-deploy/aws/terraform/terraform.tfstate ]; then
             tf_state=true
           else
             tf_state=false
