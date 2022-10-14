@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+playbookdir="./havoc-playbooks"
+havocdir="${HOME}/.havoc/"
 
 while getopts "acd:e:p:r:su:" flag; do
     case "${flag}" in
@@ -36,87 +39,146 @@ while getopts "acd:e:p:r:su:" flag; do
           echo "Done."
           exit
           ;;
-        c)
-          # Configure a playbook
+        
+        c) 
+          ### Configure a ./havoc playbook
+          set -e  # exit on any error
+
+          # Check to see if ./havoc has been configured.
           if [ ! -d ./venv ]; then
-            echo "No virtualenv found. Run ./havoc -d or ./havoc -s first."
-            exit
+            echo "[ERROR] ./venv not found. Run '$0 -d' or '$0 -s' first."
+            echo "Exiting."
+            exit 1
           fi
+          
+          # A few variables
           python3_bin=./venv/bin/python3
           pip_bin=./venv/bin/pip3
-          python_pkg=$(${pip_bin} --disable-pip-version-check list)
-          havoc_exists=$(printf '%s\n' "${python_pkg}" | sed -n '/^havoc/p')
-          if [ ! "${havoc_exists}" ]; then
-            echo "havoc python module not found. Run ./havoc -d or ./havoc -s."
-            exit
+          
+          # Check that havoc python module is installed.
+          if ! ${pip_bin} --disable-pip-version-check list 2>&1 | grep -q '^havoc'; then
+            echo "[ERROR] ./havoc python module not found. Run ./havoc -d or ./havoc -s."
+            echo "Exiting."
+            exit 1
           fi
+          
+          # Make a menu from available playbooks in $playbookdir.
+          # Defines $playbook moving forward.
           echo ""
           PS3="Select a playbook to configure: "
-          cd havoc-playbooks
+          cd ${playbookdir}
           array=(*/)
           select playbook in "${array[@]%/}"; do
             echo "Configuring playbook ${playbook}."
             break
           done
           cd ..
-          if [ ! -f "./havoc-playbooks/${playbook}/requirements.txt" ]; then
-            echo "Could not find ${playbook} in havoc-playbooks."
-            exit
+
+          playbookini="${playbookdir}/${playbook}/${playbook}.ini"
+          sampleini="${playbookdir}/${playbook}/${playbook}.ini.sample"
+          tmpini="${playbookdir}/${playbook}/${playbook}.ini.tmp"
+
+          # Checks for playbook requirements.txt.
+          if [ ! -f "${playbookdir}/${playbook}/requirements.txt" ]; then
+            echo "[ERROR] Could not find ${playbook} in ${playbookdir}.  Re-clone the repo?"
+            echo "Exiting."
+            exit 1
           fi
-          if [ ! -f "./havoc-playbooks/${playbook}/${playbook}.ini.sample" ]; then
-            echo "Could not find ${playbook}.ini.sample in havoc-playbooks/${playbook}."
-            exit
+
+          # Checks for playbook sample ini file.
+          if [ ! -f ${sampleini} ]; then
+            echo "[ERROR] Could not find ${playbook}.ini.sample in ${playbookdir}/${playbook}."
+            echo "Exiting."
+            exit 1
           fi
+
           echo ""
           echo "If you have previously configured this playbook, configuring it again will delete the existing configuration."
           read -p "Are you sure you want to continue? [Y/N]: " user_continue
           if [[ ! ${user_continue} == y* ]] && [[ ! ${user_continue} == Y* ]]; then
-            echo "Exiting..."
-            exit
+            echo "Bye."
+            exit 1
           fi
           echo ""
           echo "Creating a customized ${playbook}.ini file."
           echo "Provide a value for each parameter."
           echo "Press enter without providing a value to accept the default."
-          if [ -f "./havoc-playbooks/${playbook}/${playbook}.ini" ]; then
-            mv ./havoc-playbooks/${playbook}/${playbook}.ini ./havoc-playbooks/${playbook}/${playbook}.ini.tmp
-            input="./havoc-playbooks/${playbook}/${playbook}.ini.tmp"
-          else
-            input="./havoc-playbooks/${playbook}/${playbook}.ini.sample"
+
+          # Determines number of lines in $sampleini.
+          # Checks for presence of $playbookini.
+          # If $playbookini is present:
+          #   - moves $playbookini to $tmpini
+          #   - determines number of lines in $tmpini
+          #   - compares line count to $samplelines.
+          #     - If they match, $playbookini is used as $input.
+          #     - If they do not match, $sampleini is used as $input.
+          # If $playbookini is not present, $sampleini is used as $input.
+          # This process prevents corrupted playbook ini files, usually from premature exit.
+          samplelines=$( wc -l ${sampleini} | awk '{print $1}' )
+          if [ -f ${playbookini} ]; then
+            mv ${playbookini} ${tmpini}
+            inilines=$( wc -l ${tmpini} | awk '{print $1}' )
+            if [ $samplelines != $inilines ]; then # If line counts don't agree, use sample ini.
+              echo "[INFO] ${playbook}.ini might be corrupted. Using ${playbook}.ini.sample instead."
+              input=${sampleini}
+            else # If line counts match, proceed with tmp file as ini.
+              input=${tmpini}
+            fi
+          else # If no playbook ini file, default to using $sampleini for $input.
+            input=${sampleini}
           fi
-          touch ./havoc-playbooks/${playbook}/${playbook}.ini
+
+          touch ${tmpini} # giggity
+          
+          # Begin writing new playbook ini file.  While loop reads in $input.
           while read -r line
           do
+            # Write sample ini headers to new ini file
             if [[ ${line} == \[*\] ]]; then
               echo ""
               echo "${line}"
-              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+              echo "${line}" >> ${playbookini}
               continue
             fi
-            if [[ ${line}x == x ]]; then
-              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+            
+            # Write blank ini headers to new ini file 
+            if [[ -z ${line} ]]; then
+              echo "${line}" >> ${playbookini}
               continue
             fi
+
+            # parameter = name of value
+            # default_value = pre-populated value from $sampleini or previous $playbookini
             parameter=$(printf '%s\n' "${line}" | sed -rn 's/^(.*) =.*/\1/p')
             default_value=$(printf '%s\n' "${line}" | sed -rn 's/^.* = (.*)/\1/p')
+            
+            # Prompt for user input.  Use default value if nothing provided.
             read -p "${parameter} [${default_value}]: " user_response < /dev/tty
             if [ ! ${user_response} ]; then
-              echo "${line}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+              echo "${line}" >> ${playbookini}
             else
-              echo "${parameter} = ${user_response}" >> ./havoc-playbooks/${playbook}/${playbook}.ini
+              echo "${parameter} = ${user_response}" >> ${playbookini}
             fi
           done < "${input}"
-          if [ -f "./havoc-playbooks/${playbook}/${playbook}.ini.tmp" ]; then
-            rm ./havoc-playbooks/${playbook}/${playbook}.ini.tmp
+
+          # Clean up tmp file, if present (probably)
+          if [ -f ${tmpini} ]; then
+            rm ${tmpini}
           fi
-          ${pip_bin} install -r "./havoc-playbooks/${playbook}/requirements.txt"
-          playbook_exists=$(cat ~/.havoc/playbooks | sed -n "/^${playbook}/p")
-          if [ ! ${playbook_exists} ]; then
-            echo "${playbook}" >> ~/.havoc/playbooks
+          
+          # Install playbook-dependent python modules
+          ${pip_bin} -q install -r "${playbookdir}/${playbook}/requirements.txt"
+
+          # Add playbook to ./havoc configured playbook list, if needed.
+          if grep -Eq "^${playbook}" ${havocdir}/playbooks; then
+            echo "${playbook}" >> ${havocdir}/playbooks
           fi
+          
+          echo
           echo "Playbook ${playbook} configured."
-          exit
+          exit 0
           ;;
+
         d)
           # Deploy a new campaign and configure the local environment.
           deploy=${OPTARG}
