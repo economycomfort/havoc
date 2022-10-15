@@ -4,6 +4,15 @@ playbookdir="./havoc-playbooks"
 havocdir="${HOME}/.havoc/"
 
 while getopts "acd:e:p:r:su:" flag; do
+    if [ ${SUDO_USER} ]; then
+        echo ""
+        echo "This program should not be executed with sudo. Please re-run again without sudo."
+        echo "Alternatively, if you desire to deploy your ./HAVOC campaign from the root account,"
+        echo "'su -' to root first, clone the repository as root and then run the program from there."
+        echo "Bye."
+        echo ""
+        exit 1
+    fi
     case "${flag}" in
         a)
           # Add a new credential profile to the local config.
