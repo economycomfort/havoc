@@ -163,7 +163,7 @@ while getopts "acd:e:p:r:su:" flag; do
             
             # Prompt for user input.  Use default value if nothing provided.
             read -p "${parameter} [${default_value}]: " user_response < /dev/tty
-            if [ ! ${user_response} ]; then
+            if [[ -z ${user_response} ]]; then
               echo "${line}" >> ${playbookini}
             else
               echo "${parameter} = ${user_response}" >> ${playbookini}
