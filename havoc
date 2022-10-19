@@ -179,7 +179,7 @@ while getopts "acd:e:p:r:su:" flag; do
           ${pip_bin} -q install -r "${playbookdir}/${playbook}/requirements.txt"
 
           # Add playbook to ./havoc configured playbook list, if needed.
-          if grep -Eq "^${playbook}" ${havocdir}/playbooks; then
+          if ! grep -Eq "^${playbook}" ${havocdir}/playbooks; then
             echo "${playbook}" >> ${havocdir}/playbooks
           fi
           
