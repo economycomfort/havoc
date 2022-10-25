@@ -107,7 +107,9 @@ class HavocCMD(Cmd):
         format_output('list_tasks', list_tasks_response)
 
     def help_list_tasks(self):
-        print('\nList all running tasks.')
+        print('\nList tasks.')
+        print('\n--task_name_contains=<string> - (optional) only list tasks that contain the provided value in the task name')
+        print('\n--task_status=(all|running|starting|idle|busy|terminated) - (optional) only list tasks whose status matches the provided value (defaults to "running," which includes tasks with a status of "starting," "idle," or "busy")')
 
     def do_get_task(self, inp):
         args = {'task_name': ''}
