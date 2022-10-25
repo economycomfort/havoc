@@ -101,7 +101,9 @@ class HavocCMD(Cmd):
         print('\nExit the application. Shorthand: Ctrl-D.\n')
 
     def do_list_tasks(self, inp):
-        list_tasks_response = h.list_tasks()
+        args = {'task_status': '', 'task_name_contains': ''}
+        command_args = convert_input(args, inp)
+        list_tasks_response = h.list_tasks(**command_args)
         format_output('list_tasks', list_tasks_response)
 
     def help_list_tasks(self):
