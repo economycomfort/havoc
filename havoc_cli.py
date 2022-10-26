@@ -101,11 +101,15 @@ class HavocCMD(Cmd):
         print('\nExit the application. Shorthand: Ctrl-D.\n')
 
     def do_list_tasks(self, inp):
-        list_tasks_response = h.list_tasks()
+        args = {'task_status': '', 'task_name_contains': ''}
+        command_args = convert_input(args, inp)
+        list_tasks_response = h.list_tasks(**command_args)
         format_output('list_tasks', list_tasks_response)
 
     def help_list_tasks(self):
-        print('\nList all running tasks.')
+        print('\nList tasks.')
+        print('\n--task_name_contains=<string> - (optional) only list tasks that contain the provided value in the task name')
+        print('\n--task_status=(all|running|starting|idle|busy|terminated) - (optional) only list tasks whose status matches the provided value (defaults to "running," which includes tasks with a status of "starting," "idle," or "busy")')
 
     def do_get_task(self, inp):
         args = {'task_name': ''}
@@ -555,7 +559,7 @@ class HavocCMD(Cmd):
         print('\nGet the results of an executed agent shell command or module.')
         print('\n--task_name=<string> - (required) the name of the task hosting the agent to get results from.')
         print('\n--agent_name=<string> - (required) the name of the agent to get shell command or module results from.')
-        print('\n--task_id=<string> - (optional) the task ID assigned to the shell command or module to get results from. If not specified, all available shell command and module results are returned.')
+        print('\n--task_id=<string> - (required) the task ID assigned to the shell command or module to get results from.')
     
     def default(self, inp):
         if inp == 'x' or inp == 'q':
