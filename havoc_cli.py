@@ -559,7 +559,7 @@ class HavocCMD(Cmd):
         print('\nGet the results of an executed agent shell command or module.')
         print('\n--task_name=<string> - (required) the name of the task hosting the agent to get results from.')
         print('\n--agent_name=<string> - (required) the name of the agent to get shell command or module results from.')
-        print('\n--task_id=<string> - (optional) the task ID assigned to the shell command or module to get results from. If not specified, all available shell command and module results are returned.')
+        print('\n--task_id=<string> - (required) the task ID assigned to the shell command or module to get results from.')
     
     def default(self, inp):
         if inp == 'x' or inp == 'q':
